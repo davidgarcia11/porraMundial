@@ -128,12 +128,16 @@ async function main() {
   };
 
   const roundTeams = {}; // round -> Set of codes appearing in that round
+  let groupTotal = 0;
+  let groupFinished = 0;
 
   for (const m of matches) {
     const homeCode = toCode(m.homeTeam);
     const awayCode = toCode(m.awayTeam);
 
     if (m.stage === 'GROUP_STAGE') {
+      groupTotal++;
+      if (isFinished(m)) groupFinished++;
       if (!isFinished(m) || homeCode == null || awayCode == null) continue;
       const f = ft(m);
       const gm = groupIndex.get([homeCode, awayCode].sort().join('|'));
@@ -171,7 +175,15 @@ async function main() {
   // "clasificado para 3º y 4º puesto" = the two teams in the third-place match
   results.qualified.tercer_cuarto = [...(roundTeams['tercer_puesto'] || [])];
 
-  // ---- standings (group final positions) ----
+  // ---- standings (group FINAL positions) ----
+  // Posición exacta puntúa solo cuando la fase de grupos ha terminado: las
+  // tablas "en vivo" cambian, así que no se contabilizan hasta el final.
+  const groupStageComplete = groupTotal > 0 && groupFinished === groupTotal;
+  if (!groupStageComplete) {
+    console.log(
+      `  fase de grupos en curso (${groupFinished}/${groupTotal}); la clasificación de grupos no se contabiliza todavía`
+    );
+  } else
   try {
     const standingsData = await api(`/competitions/${COMPETITION}/standings`);
     const porraGroups = {}; // letter -> Set(codes)
