@@ -70,6 +70,8 @@ const toCode = (team) => {
   if (team.tla && byTla.has(team.tla.toUpperCase())) return byTla.get(team.tla.toUpperCase());
   const n = norm(team.name) || norm(team.shortName);
   if (byName.has(n)) return byName.get(n);
+  // "Por determinar": cruces de eliminatorias aún sin equipos -> no avisar.
+  if (!team.name && !team.tla) return null;
   unmatched.add(team.tla ? `${team.name} (${team.tla})` : team.name);
   return null;
 };
