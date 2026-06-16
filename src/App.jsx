@@ -69,8 +69,18 @@ export default function App() {
 
       {!loading && !hasResults && (
         <div className="banner info">
-          Aún no hay resultados cargados. Genera <code>public/results.json</code> con{' '}
-          <code>npm run fetch:results</code>. Mientras tanto se muestran las apuestas con 0 puntos.
+          {results?.source && String(results.source).startsWith('error') ? (
+            <>
+              No se pudieron cargar resultados automáticos: <b>{results.source}</b>. Revisa el token{' '}
+              <code>FOOTBALL_DATA_TOKEN</code> en Vercel y vuelve a desplegar, o edita{' '}
+              <code>public/results.json</code> a mano.
+            </>
+          ) : (
+            <>
+              Aún no hay resultados cargados. Genera <code>public/results.json</code> con{' '}
+              <code>npm run fetch:results</code>. Mientras tanto se muestran las apuestas con 0 puntos.
+            </>
+          )}
         </div>
       )}
 

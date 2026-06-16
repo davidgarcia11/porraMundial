@@ -26,10 +26,26 @@ const BASE = 'https://api.football-data.org/v4';
 // a build failure: the app keeps the previously committed public/results.json.
 const SOFT = argv.includes('--soft');
 
+// Merge a status message into the existing results.json without losing data,
+// so the deployed page can explain why there are no results.
+const writeSoftStatus = (message) => {
+  const dest = path.join(ROOT, 'public', 'results.json');
+  let base = {};
+  try {
+    base = JSON.parse(fs.readFileSync(dest, 'utf8'));
+  } catch {
+    base = {};
+  }
+  base.updatedAt = new Date().toISOString();
+  base.source = message;
+  fs.writeFileSync(dest, JSON.stringify(base, null, 2));
+};
+
 if (!TOKEN) {
   const msg = 'Falta el token (FOOTBALL_DATA_TOKEN=... o --token ...). Regístrate en https://www.football-data.org/client/register';
   if (SOFT) {
     console.warn('⚠️ ', msg, '\n   Se mantiene public/results.json existente.');
+    writeSoftStatus('error: falta FOOTBALL_DATA_TOKEN en el build');
     process.exit(0);
   }
   console.error(msg);
@@ -201,6 +217,7 @@ main().catch((e) => {
   console.error('o el código de competición no es', COMPETITION, '— prueba con --competition.');
   if (SOFT) {
     console.warn('   (modo --soft: se mantiene public/results.json y el build continúa)');
+    writeSoftStatus(`error API (${COMPETITION}): ${e.message.split('\n')[0]}`);
     process.exit(0);
   }
   process.exit(1);
