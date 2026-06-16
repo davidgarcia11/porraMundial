@@ -13,15 +13,15 @@
 export const TEAMS = {
   // Grupo A
   MXC: { name: 'México', fifa: 'MEX', group: 'A', confident: true },
-  RPC: { name: 'RPC (revisar)', fifa: '', group: 'A', confident: false },
-  CDS: { name: 'CDS (revisar)', fifa: '', group: 'A', confident: false },
-  SDF: { name: 'SDF (revisar)', fifa: '', group: 'A', confident: false },
+  RPC: { name: 'República Checa', fifa: 'CZE', group: 'A', confident: true, aliases: ['Czech Republic', 'Czechia', 'Chequia'] },
+  CDS: { name: 'Corea del Sur', fifa: 'KOR', group: 'A', confident: true, aliases: ['South Korea', 'Korea Republic', 'Republic of Korea'] },
+  SDF: { name: 'Sudáfrica', fifa: 'RSA', group: 'A', confident: true, aliases: ['South Africa'] },
 
   // Grupo B
-  SZA: { name: 'Suiza', fifa: 'SUI', group: 'B', confident: false, aliases: ['Switzerland'] },
-  BYH: { name: 'Bosnia y Herzegovina', fifa: 'BIH', group: 'B', confident: false, aliases: ['Bosnia-Herzegovina'] },
+  SZA: { name: 'Suiza', fifa: 'SUI', group: 'B', confident: true, aliases: ['Switzerland'] },
+  BYH: { name: 'Bosnia y Herzegovina', fifa: 'BIH', group: 'B', confident: true, aliases: ['Bosnia-Herzegovina', 'Bosnia and Herzegovina'] },
   CND: { name: 'Canadá', fifa: 'CAN', group: 'B', confident: true, aliases: ['Canada'] },
-  CTR: { name: 'Costa Rica', fifa: 'CRC', group: 'B', confident: false },
+  CTR: { name: 'Catar', fifa: 'QAT', group: 'B', confident: true, aliases: ['Qatar'] },
 
   // Grupo C
   MRC: { name: 'Marruecos', fifa: 'MAR', group: 'C', confident: true, aliases: ['Morocco'] },
@@ -30,7 +30,7 @@ export const TEAMS = {
   'Haití': { name: 'Haití', fifa: 'HAI', group: 'C', confident: true, aliases: ['Haiti'] },
 
   // Grupo D
-  TUR: { name: 'Túnez', fifa: 'TUN', group: 'D', confident: false, aliases: ['Tunisia', 'Turquía', 'Turkey'] },
+  TUR: { name: 'Turquía', fifa: 'TUR', group: 'D', confident: true, aliases: ['Turkey', 'Türkiye', 'Turkiye'] },
   PGY: { name: 'Paraguay', fifa: 'PAR', group: 'D', confident: true },
   EEU: { name: 'Estados Unidos', fifa: 'USA', group: 'D', confident: true, aliases: ['United States'] },
   AUS: { name: 'Australia', fifa: 'AUS', group: 'D', confident: true },
@@ -38,14 +38,14 @@ export const TEAMS = {
   // Grupo E
   ALM: { name: 'Alemania', fifa: 'GER', group: 'E', confident: true, aliases: ['Germany'] },
   ECU: { name: 'Ecuador', fifa: 'ECU', group: 'E', confident: true },
-  CDM: { name: 'CDM (revisar)', fifa: '', group: 'E', confident: false, aliases: ['Camerún', 'Cameroon'] },
-  CRZ: { name: 'Curaçao', fifa: 'CUW', group: 'E', confident: false, aliases: ['Curazao', 'Curacao'] },
+  CDM: { name: 'Costa de Marfil', fifa: 'CIV', group: 'E', confident: true, aliases: ['Ivory Coast', "Côte d'Ivoire", 'Cote d Ivoire'] },
+  CRZ: { name: 'Curaçao', fifa: 'CUW', group: 'E', confident: true, aliases: ['Curazao', 'Curacao'] },
 
   // Grupo F
   HOL: { name: 'Países Bajos', fifa: 'NED', group: 'F', confident: true, aliases: ['Holanda', 'Netherlands'] },
   JPN: { name: 'Japón', fifa: 'JPN', group: 'F', confident: true, aliases: ['Japan'] },
-  TNZ: { name: 'TNZ (revisar)', fifa: '', group: 'F', confident: false, aliases: ['Tanzania'] },
-  SUE: { name: 'Suecia', fifa: 'SWE', group: 'F', confident: false, aliases: ['Sweden'] },
+  TNZ: { name: 'Túnez', fifa: 'TUN', group: 'F', confident: true, aliases: ['Tunisia'] },
+  SUE: { name: 'Suecia', fifa: 'SWE', group: 'F', confident: true, aliases: ['Sweden'] },
 
   // Grupo G
   BGC: { name: 'Bélgica', fifa: 'BEL', group: 'G', confident: true, aliases: ['Belgium'] },
@@ -56,7 +56,7 @@ export const TEAMS = {
   // Grupo H
   SPN: { name: 'España', fifa: 'ESP', group: 'H', confident: true, aliases: ['Spain'] },
   URU: { name: 'Uruguay', fifa: 'URU', group: 'H', confident: true },
-  ARS: { name: 'ARS (revisar)', fifa: '', group: 'H', confident: false, aliases: ['Argelia', 'Algeria', 'Arabia Saudí', 'Saudi Arabia'] },
+  ARS: { name: 'Arabia Saudí', fifa: 'KSA', group: 'H', confident: true, aliases: ['Saudi Arabia'] },
   CVE: { name: 'Cabo Verde', fifa: 'CPV', group: 'H', confident: true, aliases: ['Cape Verde'] },
 
   // Grupo I
@@ -67,15 +67,15 @@ export const TEAMS = {
 
   // Grupo J
   ARG: { name: 'Argentina', fifa: 'ARG', group: 'J', confident: true },
-  ATR: { name: 'Austria', fifa: 'AUT', group: 'J', confident: false },
-  AGL: { name: 'Angola', fifa: 'ANG', group: 'J', confident: false },
+  ATR: { name: 'Austria', fifa: 'AUT', group: 'J', confident: true },
+  AGL: { name: 'Argelia', fifa: 'ALG', group: 'J', confident: true, aliases: ['Algeria'] },
   JRD: { name: 'Jordania', fifa: 'JOR', group: 'J', confident: true, aliases: ['Jordan'] },
 
   // Grupo K
   PTG: { name: 'Portugal', fifa: 'POR', group: 'K', confident: true },
   CLM: { name: 'Colombia', fifa: 'COL', group: 'K', confident: true },
   UZB: { name: 'Uzbekistán', fifa: 'UZB', group: 'K', confident: true, aliases: ['Uzbekistan'] },
-  CNG: { name: 'CNG (revisar)', fifa: '', group: 'K', confident: false, aliases: ['Congo', 'RD Congo', 'DR Congo'] },
+  CNG: { name: 'RD Congo', fifa: 'COD', group: 'K', confident: true, aliases: ['DR Congo', 'Congo DR', 'Democratic Republic of the Congo', 'Congo'] },
 
   // Grupo L
   CRO: { name: 'Croacia', fifa: 'CRO', group: 'L', confident: true, aliases: ['Croatia'] },

@@ -38,11 +38,9 @@ FOOTBALL_DATA_TOKEN=tu_token npm run fetch:results
 ### ⚠️ Importante: confirmar los códigos de equipo
 
 La porra usa códigos propios (MXC, RPC, BGC…). El mapeo a equipos reales está en
-[`src/data/teams.js`](src/data/teams.js). Algunos están marcados como **`confident: false`**
-(salen como `XXX (revisar)`): hay que confirmarlos antes de fiarse de la puntuación automática,
-porque la API no podrá emparejar esos equipos. La app muestra un aviso con los códigos pendientes.
-
-Pendientes de confirmar: **RPC, CDS, SDF, SZA, BYH, CTR, TUR, CDM, CRZ, SUE, TNZ, ARS, ATR, AGL, CNG**.
+[`src/data/teams.js`](src/data/teams.js), ya confirmado con el organizador e incluye el código
+FIFA (`fifa`) de cada equipo para emparejar contra la API. Si algún equipo de la API no se
+mapea, el script de descarga lo avisa y basta con añadir un alias en ese fichero.
 
 ## Entrada manual (alternativa)
 
