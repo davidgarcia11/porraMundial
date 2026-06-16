@@ -57,10 +57,20 @@ La app es estática, así que va perfecta en Vercel:
 > Si la descarga falla (token mal, red, plan), el build no se rompe: se publica con
 > el último `public/results.json` disponible.
 
-**Refrescar resultados durante el Mundial:** cada vez que quieras actualizar el marcador,
-lanza un nuevo despliegue (botón *Redeploy* en Vercel, o un **Deploy Hook** que puedes llamar
-con `curl`/cron). Si quieres, puedo añadir una GitHub Action que llame al Deploy Hook
-automáticamente cada X horas.
+### Refresco automático (GitHub Action)
+
+Para que los resultados se actualicen solos durante el Mundial, el repo incluye
+`.github/workflows/refresh-resultados.yml`, que cada 2 horas dispara un **Deploy Hook**
+de Vercel (Vercel reconstruye y vuelve a descargar los resultados). Configúralo así:
+
+1. **Vercel** → tu proyecto → **Settings → Git → Deploy Hooks** → crea uno:
+   - Nombre: `refresh` · Rama: `main` → **Create Hook** y copia la URL.
+2. **GitHub** → repo → **Settings → Secrets and variables → Actions → New repository secret**:
+   - Name: `VERCEL_DEPLOY_HOOK_URL` · Value: la URL del paso anterior.
+3. Listo. Puedes lanzarlo a mano en **Actions → Refrescar resultados → Run workflow**, o esperar al cron.
+
+> Ajusta la frecuencia editando el `cron` del workflow (formato en https://crontab.guru).
+> Las Actions programadas se ejecutan desde la **rama por defecto** del repo (deja `main` como default).
 
 ## Entrada manual (alternativa)
 
