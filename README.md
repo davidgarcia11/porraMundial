@@ -42,6 +42,26 @@ La porra usa códigos propios (MXC, RPC, BGC…). El mapeo a equipos reales est�
 FIFA (`fifa`) de cada equipo para emparejar contra la API. Si algún equipo de la API no se
 mapea, el script de descarga lo avisa y basta con añadir un alias en ese fichero.
 
+## Desplegar en Vercel
+
+La app es estática, así que va perfecta en Vercel:
+
+1. En https://vercel.com → **Add New → Project** → importa el repo `porraMundial`.
+2. Vercel detecta el preset **Vite** y usa `vercel.json` (build `npm run build:vercel`, salida `dist`). No hay que tocar nada.
+3. En **Settings → Environment Variables** añade:
+   - `FOOTBALL_DATA_TOKEN` = tu token de football-data.org
+   - (opcional) `FOOTBALL_DATA_COMPETITION` = `WC`
+4. **Deploy**. En cada despliegue se descargan los resultados y se reconstruye la web.
+
+> El token va **solo** como variable de entorno en Vercel, nunca en el repositorio.
+> Si la descarga falla (token mal, red, plan), el build no se rompe: se publica con
+> el último `public/results.json` disponible.
+
+**Refrescar resultados durante el Mundial:** cada vez que quieras actualizar el marcador,
+lanza un nuevo despliegue (botón *Redeploy* en Vercel, o un **Deploy Hook** que puedes llamar
+con `curl`/cron). Si quieres, puedo añadir una GitHub Action que llame al Deploy Hook
+automáticamente cada X horas.
+
 ## Entrada manual (alternativa)
 
 `public/results.json` se puede editar a mano con el mismo formato que genera el script.

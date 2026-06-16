@@ -22,10 +22,17 @@ const argOf = (flag) => {
 const TOKEN = argOf('--token') || process.env.FOOTBALL_DATA_TOKEN;
 const COMPETITION = argOf('--competition') || process.env.FOOTBALL_DATA_COMPETITION || 'WC';
 const BASE = 'https://api.football-data.org/v4';
+// In --soft mode (used during the Vercel build) any problem is a warning, never
+// a build failure: the app keeps the previously committed public/results.json.
+const SOFT = argv.includes('--soft');
 
 if (!TOKEN) {
-  console.error('Falta el token. Usa FOOTBALL_DATA_TOKEN=... o --token ...');
-  console.error('Regístrate gratis en https://www.football-data.org/client/register');
+  const msg = 'Falta el token (FOOTBALL_DATA_TOKEN=... o --token ...). Regístrate en https://www.football-data.org/client/register';
+  if (SOFT) {
+    console.warn('⚠️ ', msg, '\n   Se mantiene public/results.json existente.');
+    process.exit(0);
+  }
+  console.error(msg);
   process.exit(1);
 }
 
@@ -192,5 +199,9 @@ main().catch((e) => {
   console.error('\n❌ Error:', e.message);
   console.error('\nSi es 403/404: el plan gratuito quizá no cubre esta competición,');
   console.error('o el código de competición no es', COMPETITION, '— prueba con --competition.');
+  if (SOFT) {
+    console.warn('   (modo --soft: se mantiene public/results.json y el build continúa)');
+    process.exit(0);
+  }
   process.exit(1);
 });
