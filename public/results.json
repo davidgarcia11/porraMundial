@@ -1,0 +1,33 @@
+{
+  "updatedAt": null,
+  "source": "none",
+  "note": "Genera este fichero con `npm run fetch:results` (API football-data.org) o edítalo a mano. Todos los códigos de equipo son los de la porra (MXC, RPC, ...).",
+  "groupMatches": {},
+  "groupStandings": {},
+  "qualified": {
+    "dieciseisavos": [],
+    "octavos": [],
+    "cuartos": [],
+    "semifinales": [],
+    "tercer_cuarto": [],
+    "final": []
+  },
+  "knockoutResults": {
+    "dieciseisavos": [],
+    "octavos": [],
+    "cuartos": [],
+    "semifinales": [],
+    "tercer_puesto": [],
+    "final": []
+  },
+  "honors": {
+    "campeon": null,
+    "subcampeon": null,
+    "tercero": null,
+    "botaOro": null,
+    "botaPlata": null,
+    "botaBronce": null,
+    "balonOro": null,
+    "mejorPortero": null
+  }
+}

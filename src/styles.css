@@ -1,0 +1,109 @@
+:root {
+  --bg: #0f1216;
+  --panel: #171c23;
+  --panel-2: #1e252e;
+  --line: #2a323d;
+  --text: #e7edf3;
+  --muted: #93a1b1;
+  --accent: #2dd4a7;
+  --accent-2: #4f9dff;
+  --warn-bg: #3a2e12;
+  --warn-line: #7a5d1e;
+  --info-bg: #14303a;
+  --info-line: #1d5468;
+  --gold: #f5c518;
+  --silver: #c8d0d8;
+  --bronze: #cd7f32;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.45;
+}
+
+.app { max-width: 980px; margin: 0 auto; padding: 16px; }
+
+.header h1 { margin: 0 0 4px; font-size: 1.55rem; }
+.header .sub { margin: 0 0 12px; color: var(--muted); font-size: 0.9rem; }
+
+.banner {
+  border-radius: 10px; padding: 10px 14px; margin: 0 0 12px; font-size: 0.9rem;
+  border: 1px solid var(--line);
+}
+.banner.warn { background: var(--warn-bg); border-color: var(--warn-line); }
+.banner.info { background: var(--info-bg); border-color: var(--info-line); }
+.banner code { background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 5px; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.tab {
+  background: var(--panel); color: var(--text); border: 1px solid var(--line);
+  padding: 8px 14px; border-radius: 999px; cursor: pointer; font-size: 0.88rem;
+}
+.tab:hover { border-color: var(--accent-2); }
+.tab.active { background: var(--accent); color: #06231b; border-color: var(--accent); font-weight: 600; }
+
+.content { min-height: 300px; }
+h2 { font-size: 1.2rem; margin: 0 0 14px; }
+h3 { font-size: 1rem; margin: 22px 0 8px; color: var(--accent); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+thead th {
+  background: var(--panel-2); text-align: left; padding: 9px 10px; font-weight: 600;
+  color: var(--muted); white-space: nowrap; position: sticky; top: 0;
+}
+tbody td { padding: 8px 10px; border-top: 1px solid var(--line); }
+tbody tr:hover { background: rgba(255,255,255,0.03); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.total { font-weight: 700; color: var(--accent); }
+.rank { width: 40px; }
+.name { font-weight: 500; }
+.mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.85rem; }
+.pos { color: var(--accent); font-weight: 600; }
+.vs { color: var(--muted); font-size: 0.8rem; }
+.pending td { opacity: 0.5; }
+
+.podium.r1 td { background: rgba(245,197,24,0.10); }
+.podium.r2 td { background: rgba(200,208,216,0.08); }
+.podium.r3 td { background: rgba(205,127,50,0.08); }
+
+.muted { color: var(--muted); }
+.small { font-size: 0.8rem; }
+
+.jornada-picker, .cards { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.chip {
+  background: var(--panel); color: var(--text); border: 1px solid var(--line);
+  padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.82rem;
+}
+.chip:hover { border-color: var(--accent-2); }
+.chip.active { background: var(--accent-2); color: #04161f; border-color: var(--accent-2); font-weight: 600; }
+.jornada-title { color: var(--text); }
+.gained { color: var(--accent-2); }
+
+.detail-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.detail-head select {
+  background: var(--panel); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 10px; font-size: 0.9rem; min-width: 200px;
+}
+
+.card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 14px; min-width: 92px; flex: 1;
+}
+.card.big { border-color: var(--accent); }
+.card-value { font-size: 1.4rem; font-weight: 700; }
+.card.big .card-value { color: var(--accent); }
+.card-label { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
+
+.footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.78rem; }
+
+@media (max-width: 560px) {
+  .header h1 { font-size: 1.3rem; }
+  table { font-size: 0.82rem; }
+  thead th, tbody td { padding: 7px 7px; }
+}

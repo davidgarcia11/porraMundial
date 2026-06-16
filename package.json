@@ -1,0 +1,23 @@
+{
+  "name": "porra-mundial-2026",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Seguimiento de la porra del Mundial 2026: clasificación general y por jornada.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "parse": "node scripts/parse-predictions.mjs",
+    "test": "node scripts/test-engine.mjs",
+    "fetch:results": "node scripts/fetch-results.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.2"
+  }
+}

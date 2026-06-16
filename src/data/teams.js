@@ -1,0 +1,93 @@
+// Mapping from the porra's custom 3-letter codes to real teams.
+//
+// `name`  -> display name (Spanish)
+// `fifa`  -> 3-letter code used to match against the results API (football-data
+//            exposes `tla`). Used by scripts/fetch-results.mjs.
+// `aliases` -> extra name strings the API might use, for fuzzy matching.
+// `confident` -> false when the decoding of the porra code is a guess. These
+//            MUST be reviewed by the organiser before trusting automatic
+//            results, otherwise scoring against the API will be wrong.
+//
+// Grouped by the group each team belongs to in the porra (A..L).
+
+export const TEAMS = {
+  // Grupo A
+  MXC: { name: 'México', fifa: 'MEX', group: 'A', confident: true },
+  RPC: { name: 'RPC (revisar)', fifa: '', group: 'A', confident: false },
+  CDS: { name: 'CDS (revisar)', fifa: '', group: 'A', confident: false },
+  SDF: { name: 'SDF (revisar)', fifa: '', group: 'A', confident: false },
+
+  // Grupo B
+  SZA: { name: 'Suiza', fifa: 'SUI', group: 'B', confident: false, aliases: ['Switzerland'] },
+  BYH: { name: 'Bosnia y Herzegovina', fifa: 'BIH', group: 'B', confident: false, aliases: ['Bosnia-Herzegovina'] },
+  CND: { name: 'Canadá', fifa: 'CAN', group: 'B', confident: true, aliases: ['Canada'] },
+  CTR: { name: 'Costa Rica', fifa: 'CRC', group: 'B', confident: false },
+
+  // Grupo C
+  MRC: { name: 'Marruecos', fifa: 'MAR', group: 'C', confident: true, aliases: ['Morocco'] },
+  BRS: { name: 'Brasil', fifa: 'BRA', group: 'C', confident: true, aliases: ['Brazil'] },
+  ESC: { name: 'Escocia', fifa: 'SCO', group: 'C', confident: true, aliases: ['Scotland'] },
+  'Haití': { name: 'Haití', fifa: 'HAI', group: 'C', confident: true, aliases: ['Haiti'] },
+
+  // Grupo D
+  TUR: { name: 'Túnez', fifa: 'TUN', group: 'D', confident: false, aliases: ['Tunisia', 'Turquía', 'Turkey'] },
+  PGY: { name: 'Paraguay', fifa: 'PAR', group: 'D', confident: true },
+  EEU: { name: 'Estados Unidos', fifa: 'USA', group: 'D', confident: true, aliases: ['United States'] },
+  AUS: { name: 'Australia', fifa: 'AUS', group: 'D', confident: true },
+
+  // Grupo E
+  ALM: { name: 'Alemania', fifa: 'GER', group: 'E', confident: true, aliases: ['Germany'] },
+  ECU: { name: 'Ecuador', fifa: 'ECU', group: 'E', confident: true },
+  CDM: { name: 'CDM (revisar)', fifa: '', group: 'E', confident: false, aliases: ['Camerún', 'Cameroon'] },
+  CRZ: { name: 'Curaçao', fifa: 'CUW', group: 'E', confident: false, aliases: ['Curazao', 'Curacao'] },
+
+  // Grupo F
+  HOL: { name: 'Países Bajos', fifa: 'NED', group: 'F', confident: true, aliases: ['Holanda', 'Netherlands'] },
+  JPN: { name: 'Japón', fifa: 'JPN', group: 'F', confident: true, aliases: ['Japan'] },
+  TNZ: { name: 'TNZ (revisar)', fifa: '', group: 'F', confident: false, aliases: ['Tanzania'] },
+  SUE: { name: 'Suecia', fifa: 'SWE', group: 'F', confident: false, aliases: ['Sweden'] },
+
+  // Grupo G
+  BGC: { name: 'Bélgica', fifa: 'BEL', group: 'G', confident: true, aliases: ['Belgium'] },
+  EGP: { name: 'Egipto', fifa: 'EGY', group: 'G', confident: true, aliases: ['Egypt'] },
+  IRN: { name: 'Irán', fifa: 'IRN', group: 'G', confident: true, aliases: ['Iran'] },
+  NZL: { name: 'Nueva Zelanda', fifa: 'NZL', group: 'G', confident: true, aliases: ['New Zealand'] },
+
+  // Grupo H
+  SPN: { name: 'España', fifa: 'ESP', group: 'H', confident: true, aliases: ['Spain'] },
+  URU: { name: 'Uruguay', fifa: 'URU', group: 'H', confident: true },
+  ARS: { name: 'ARS (revisar)', fifa: '', group: 'H', confident: false, aliases: ['Argelia', 'Algeria', 'Arabia Saudí', 'Saudi Arabia'] },
+  CVE: { name: 'Cabo Verde', fifa: 'CPV', group: 'H', confident: true, aliases: ['Cape Verde'] },
+
+  // Grupo I
+  FRN: { name: 'Francia', fifa: 'FRA', group: 'I', confident: true, aliases: ['France'] },
+  SNG: { name: 'Senegal', fifa: 'SEN', group: 'I', confident: true },
+  NOR: { name: 'Noruega', fifa: 'NOR', group: 'I', confident: true, aliases: ['Norway'] },
+  IRK: { name: 'Irak', fifa: 'IRQ', group: 'I', confident: true, aliases: ['Iraq'] },
+
+  // Grupo J
+  ARG: { name: 'Argentina', fifa: 'ARG', group: 'J', confident: true },
+  ATR: { name: 'Austria', fifa: 'AUT', group: 'J', confident: false },
+  AGL: { name: 'Angola', fifa: 'ANG', group: 'J', confident: false },
+  JRD: { name: 'Jordania', fifa: 'JOR', group: 'J', confident: true, aliases: ['Jordan'] },
+
+  // Grupo K
+  PTG: { name: 'Portugal', fifa: 'POR', group: 'K', confident: true },
+  CLM: { name: 'Colombia', fifa: 'COL', group: 'K', confident: true },
+  UZB: { name: 'Uzbekistán', fifa: 'UZB', group: 'K', confident: true, aliases: ['Uzbekistan'] },
+  CNG: { name: 'CNG (revisar)', fifa: '', group: 'K', confident: false, aliases: ['Congo', 'RD Congo', 'DR Congo'] },
+
+  // Grupo L
+  CRO: { name: 'Croacia', fifa: 'CRO', group: 'L', confident: true, aliases: ['Croatia'] },
+  ING: { name: 'Inglaterra', fifa: 'ENG', group: 'L', confident: true, aliases: ['England'] },
+  GHA: { name: 'Ghana', fifa: 'GHA', group: 'L', confident: true },
+  PAN: { name: 'Panamá', fifa: 'PAN', group: 'L', confident: true, aliases: ['Panama'] },
+};
+
+export const teamName = (code) => TEAMS[code]?.name ?? code;
+export const groupOf = (code) => TEAMS[code]?.group ?? null;
+
+// codes whose decoding still needs confirmation by the organiser
+export const UNCONFIRMED_CODES = Object.entries(TEAMS)
+  .filter(([, t]) => !t.confident)
+  .map(([code]) => code);
