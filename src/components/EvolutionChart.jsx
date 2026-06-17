@@ -25,8 +25,16 @@ export default function EvolutionChart({ scores }) {
     return <p className="muted small">Aún no hay datos. El gráfico aparecerá cuando se jueguen partidos.</p>;
   }
 
-  // Con menos de 2 jornadas jugadas, una línea no dice nada -> barras de ranking.
-  if (lastIdx < 1) return <RankingBars finalStandings={finalStandings} colorByName={colorByName} />;
+  // Una línea de evolución solo aporta con 2+ jornadas jugadas; con una sola,
+  // sería idéntica a la clasificación general, así que mostramos un aviso.
+  if (lastIdx < 1) {
+    return (
+      <p className="muted small">
+        La evolución se mostrará cuando se haya jugado más de una jornada (para comparar el avance
+        de cada participante). De momento, consulta la <b>Clasificación general</b>.
+      </p>
+    );
+  }
 
   return (
     <LineChart
@@ -36,29 +44,6 @@ export default function EvolutionChart({ scores }) {
       finalStandings={finalStandings}
       colorByName={colorByName}
     />
-  );
-}
-
-function RankingBars({ finalStandings, colorByName }) {
-  const max = Math.max(1, finalStandings[0]?.points || 1);
-  return (
-    <div className="chart">
-      <div className="bars">
-        {finalStandings.map((r) => (
-          <div className="bar-row" key={r.name}>
-            <span className="bar-name" title={r.name}>{r.name}</span>
-            <span className="bar-track">
-              <span
-                className="bar-fill"
-                style={{ width: `${(r.points / max) * 100}%`, background: colorByName[r.name] }}
-              />
-            </span>
-            <span className="bar-val">{r.points}</span>
-          </div>
-        ))}
-      </div>
-      <p className="muted small">Puntos totales por participante. Cuando haya más jornadas verás aquí la evolución.</p>
-    </div>
   );
 }
 

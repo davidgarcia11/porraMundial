@@ -125,17 +125,6 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .legend-item.on { border-color: var(--accent); background: var(--panel-2); font-weight: 600; }
 .swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
-/* barras de ranking (vista con pocas jornadas) */
-.bars { display: flex; flex-direction: column; gap: 7px; padding: 4px 2px; }
-.bar-row {
-  display: grid; grid-template-columns: minmax(84px, 34%) 1fr 34px;
-  align-items: center; gap: 10px; font-size: 0.86rem;
-}
-.bar-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bar-track { background: var(--panel-2); border-radius: 7px; height: 16px; overflow: hidden; }
-.bar-fill { display: block; height: 100%; border-radius: 7px; min-width: 2px; transition: width 0.4s ease; }
-.bar-val { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
-
 .muted { color: var(--muted); }
 .small { font-size: 0.8rem; }
 
