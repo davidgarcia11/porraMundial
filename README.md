@@ -31,6 +31,15 @@ FOOTBALL_DATA_TOKEN=tu_token npm run fetch:results
 3. Vuelve a desplegar (o recarga en local). La app lee `public/results.json` en cada carga,
    así que puedes refrescar resultados sin recompilar: re-ejecuta el script y publica el JSON.
 
+### Actualización "casi en vivo" (función serverless)
+
+Desplegada en Vercel, la web pide los resultados a `/api/results` (función serverless en
+[`api/results.js`](api/results.js)), que llama a la API **en el servidor** (el token nunca
+llega al navegador) y cachea la respuesta ~2 min. Así la web se actualiza sola al abrirla,
+sin esperar a un nuevo despliegue. Si esa función falla, la app cae automáticamente al
+`public/results.json` estático (que el cron mantiene fresco). Solo necesita la variable
+`FOOTBALL_DATA_TOKEN` en Vercel; no hay que configurar nada más.
+
 > El plan gratuito de football-data.org puede no cubrir todas las competiciones. Si recibes
 > un error 403/404, prueba otro código de competición con `--competition`. El script avisa de
 > cualquier equipo de la API que no haya sabido mapear.
