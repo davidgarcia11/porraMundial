@@ -115,8 +115,9 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        Sistema de puntuación: signo/diferencia/exacto acumulativos · puntos por clasificado ·
-        puntos extra. Octavos = 6/2/6.
+        Cómo se puntúa: aciertas el <b>signo</b>, la <b>diferencia</b> de goles y el{' '}
+        <b>resultado exacto</b> suman (acumulativo). Además puntúan los <b>equipos clasificados</b>{' '}
+        a cada ronda y el <b>cuadro de honor</b> (campeón, goleadores, mejor jugador…).
       </footer>
     </div>
   );
