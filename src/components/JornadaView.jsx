@@ -22,7 +22,7 @@ export default function JornadaView({ scores }) {
     <section>
       <h2>Clasificación por jornada</h2>
 
-      <h3>Evolución</h3>
+      <h3>Resumen visual</h3>
       <EvolutionChart scores={scores} />
 
       <div className="jornada-picker">
