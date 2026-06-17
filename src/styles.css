@@ -80,9 +80,12 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .podium.r3 .rank { color: var(--bronze); font-weight: 700; }
 
 /* banderas / equipos */
-.team { white-space: nowrap; }
-.flag { margin-right: 5px; }
-.team-name { vertical-align: middle; }
+.team { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.flag { line-height: 1; }
+.team-code { display: none; } /* en escritorio se ve el nombre completo */
+.matchup { display: inline-flex; flex-direction: column; gap: 2px; }
+/* el resultado real de eliminatorias sí puede ocupar dos líneas */
+.matches td.result { white-space: normal; }
 
 /* banner del líder */
 .leader-banner {
@@ -148,7 +151,7 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .card.big { border-color: var(--accent); }
 .card-value { font-size: 1.4rem; font-weight: 700; }
 .card.big .card-value { color: var(--accent); }
-.card-label { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.card-label { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.02em; overflow-wrap: anywhere; line-height: 1.2; }
 
 .footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.78rem; }
 
@@ -156,9 +159,10 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
   .header h1 { font-size: 1.3rem; }
   table { font-size: 0.82rem; }
   thead th, tbody td { padding: 9px 8px; }
-  /* las tablas de detalle/partidos pueden desbordar y hacer scroll lateral
-     en vez de comprimir los marcadores */
-  .matches { min-width: 380px; }
+  /* en móvil: código corto (CDS) en vez del nombre completo */
+  .team-name { display: none; }
+  .team-code { display: inline; font-weight: 600; }
+  .matches { min-width: 0; }
   .cards .card { min-width: 84px; }
   .leader-banner { padding: 10px 12px; }
 }

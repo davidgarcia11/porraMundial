@@ -1,12 +1,14 @@
 import { teamName, teamFlag } from '../data/teams.js';
 
-// Muestra la bandera + el nombre de una selección a partir de su código.
-export default function Team({ code, flagOnly = false }) {
+// Bandera + nombre de una selección. En móvil se muestra el código corto
+// (CDS, RPC…) y en pantallas grandes el nombre completo (CSS decide cuál).
+export default function Team({ code }) {
   const flag = teamFlag(code);
   return (
     <span className="team">
       {flag && <span className="flag" aria-hidden="true">{flag}</span>}
-      {!flagOnly && <span className="team-name">{teamName(code)}</span>}
+      <span className="team-code">{code}</span>
+      <span className="team-name">{teamName(code)}</span>
     </span>
   );
 }

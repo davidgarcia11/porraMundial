@@ -3,7 +3,7 @@ import { scoreMatchPrediction, scoreKnockoutPrediction } from '../scoring/engine
 import { MATCH_POINTS } from '../scoring/config.js';
 import { teamName, teamFlag } from '../data/teams.js';
 import { breakdownTotals } from '../utils.js';
-import Team from './Team.jsx';
+import Matchup from './Matchup.jsx';
 
 const KNOCKOUT_LABELS = {
   dieciseisavos: 'Dieciseisavos',
@@ -74,7 +74,7 @@ export default function ParticipantDetail({ predictions, results, scores }) {
               return (
                 <tr key={m.id} className={actual ? '' : 'pending'}>
                   <td>
-                    <Team code={m.home} /> <span className="vs">vs</span> <Team code={m.away} />
+                    <Matchup home={m.home} away={m.away} />
                   </td>
                   <td className="mono">
                     {pred.sign} · {pred.h}-{pred.a}
@@ -112,12 +112,12 @@ export default function ParticipantDetail({ predictions, results, scores }) {
                     return (
                       <tr key={m.slot + idx} className={actual ? '' : 'pending'}>
                         <td>
-                          <Team code={p.home} /> <span className="vs">-</span> <Team code={p.away} />
+                          <Matchup home={p.home} away={p.away} />
                         </td>
                         <td className="mono">
                           {p.sign} · {p.h}-{p.a}
                         </td>
-                        <td className="mono">
+                        <td className="mono result">
                           {actual
                             ? `${teamFlag(actual.home)} ${teamName(actual.home)} ${actual.h}-${actual.a} ${teamFlag(actual.away)} ${teamName(actual.away)}`
                             : '—'}
