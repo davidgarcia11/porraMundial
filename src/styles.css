@@ -59,11 +59,14 @@ thead th {
 }
 tbody td { padding: 8px 10px; border-top: 1px solid var(--line); }
 tbody tr:hover { background: rgba(255,255,255,0.03); }
-.num { text-align: right; font-variant-numeric: tabular-nums; }
+.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .total { font-weight: 700; color: var(--accent); }
 .rank { width: 40px; }
 .name { font-weight: 500; }
-.mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.85rem; }
+.mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.85rem; white-space: nowrap; }
+/* en Detalle/Partidos, los marcadores nunca se parten; deja respirar la fila */
+.matches td { vertical-align: middle; line-height: 1.5; }
+.matches th:not(:first-child), .matches td:not(:first-child) { white-space: nowrap; }
 .pos { color: var(--accent); font-weight: 600; }
 .vs { color: var(--muted); font-size: 0.8rem; }
 .pending td { opacity: 0.5; }
@@ -152,5 +155,10 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 @media (max-width: 560px) {
   .header h1 { font-size: 1.3rem; }
   table { font-size: 0.82rem; }
-  thead th, tbody td { padding: 7px 7px; }
+  thead th, tbody td { padding: 9px 8px; }
+  /* las tablas de detalle/partidos pueden desbordar y hacer scroll lateral
+     en vez de comprimir los marcadores */
+  .matches { min-width: 380px; }
+  .cards .card { min-width: 84px; }
+  .leader-banner { padding: 10px 12px; }
 }
