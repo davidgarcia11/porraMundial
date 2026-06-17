@@ -1,7 +1,10 @@
 // Shared core: downloads Mundial results from football-data.org and translates
 // them into the porra's team codes. Pure (no fs / no process), so it can run
 // both in the CLI build script and in the Vercel serverless function.
-import { TEAMS } from '../data/teams.js';
+//
+// Returns the porra `results` (with `results.tournament` attached for the live
+// "Mundial" views: group tables, full fixture list and bracket).
+import { TEAMS, teamName } from '../data/teams.js';
 
 const API_BASE = 'https://api.football-data.org/v4';
 
@@ -67,6 +70,11 @@ export async function buildResults({
     unmatched.add(team.tla ? `${team.name} (${team.tla})` : team.name);
     return null;
   };
+  // equipo normalizado para la vista Mundial (code porra o null = por determinar)
+  const mapTeam = (team) => {
+    const code = toCode(team);
+    return { code, name: code ? teamName(code) : team?.name || 'Por determinar' };
+  };
 
   const api = async (endpoint) => {
     const r = await fetchImpl(`${API_BASE}${endpoint}`, { headers: { 'X-Auth-Token': token } });
@@ -90,9 +98,25 @@ export async function buildResults({
   let groupTotal = 0;
   let groupFinished = 0;
 
+  // Vista Mundial: todos los partidos normalizados.
+  const allMatches = [];
+
   for (const m of matches) {
     const homeCode = toCode(m.homeTeam);
     const awayCode = toCode(m.awayTeam);
+
+    allMatches.push({
+      id: m.id,
+      utcDate: m.utcDate || null,
+      status: m.status,
+      stage: m.stage,
+      matchday: m.matchday ?? null,
+      group: m.group ?? null,
+      home: mapTeam(m.homeTeam),
+      away: mapTeam(m.awayTeam),
+      score: { home: ft(m).home ?? null, away: ft(m).away ?? null },
+      winner: m.score?.winner ?? null,
+    });
 
     if (m.stage === 'GROUP_STAGE') {
       groupTotal++;
@@ -125,39 +149,68 @@ export async function buildResults({
     }
   }
 
+  allMatches.sort((a, b) => (a.utcDate || '').localeCompare(b.utcDate || ''));
+
   for (const [round, qkey] of Object.entries(ROUND_TO_QUALIFIER)) {
     results.qualified[qkey] = [...(roundTeams[round] || [])];
   }
   results.qualified.tercer_cuarto = [...(roundTeams['tercer_puesto'] || [])];
 
-  // Group final positions only once the whole group stage is finished.
+  // ---- standings: tablas de grupo (siempre, para la vista Mundial) ----
+  // La "posición exacta" de la porra solo se contabiliza con la fase de grupos
+  // terminada; las tablas en vivo se exponen igualmente en results.tournament.
   const groupStageComplete = groupTotal > 0 && groupFinished === groupTotal;
-  if (groupStageComplete) {
-    try {
-      const standingsData = await api(`/competitions/${competition}/standings`);
-      const porraGroups = {};
-      for (const [code, t] of Object.entries(TEAMS)) {
-        (porraGroups[t.group] ||= new Set()).add(code);
-      }
-      for (const s of standingsData.standings || []) {
-        if (s.type && s.type !== 'TOTAL') continue;
-        const codes = (s.table || []).map((row) => toCode(row.team)).filter(Boolean);
-        if (codes.length < 2) continue;
-        let best = null;
-        let bestN = 0;
-        for (const [letter, set] of Object.entries(porraGroups)) {
-          const n = codes.filter((c) => set.has(c)).length;
-          if (n > bestN) {
-            bestN = n;
-            best = letter;
-          }
+  const tournamentGroups = {};
+  const porraStandings = {};
+  try {
+    const standingsData = await api(`/competitions/${competition}/standings`);
+    const porraGroups = {};
+    for (const [code, t] of Object.entries(TEAMS)) (porraGroups[t.group] ||= new Set()).add(code);
+
+    for (const s of standingsData.standings || []) {
+      if (s.type && s.type !== 'TOTAL') continue;
+      const rows = (s.table || []).map((row) => {
+        const code = toCode(row.team);
+        return {
+          position: row.position,
+          code,
+          name: code ? teamName(code) : row.team?.name || '',
+          playedGames: row.playedGames,
+          won: row.won,
+          draw: row.draw,
+          lost: row.lost,
+          goalsFor: row.goalsFor,
+          goalsAgainst: row.goalsAgainst,
+          goalDifference: row.goalDifference,
+          points: row.points,
+        };
+      });
+      const codes = rows.map((r) => r.code).filter(Boolean);
+      if (codes.length < 2) continue;
+      let best = null;
+      let bestN = 0;
+      for (const [letter, set] of Object.entries(porraGroups)) {
+        const nn = codes.filter((c) => set.has(c)).length;
+        if (nn > bestN) {
+          bestN = nn;
+          best = letter;
         }
-        if (best && bestN >= 2) results.groupStandings[best] = codes;
       }
-    } catch {
-      // standings are optional; ignore
+      if (best && bestN >= 2) {
+        tournamentGroups[best] = rows;
+        porraStandings[best] = codes;
+      }
     }
+  } catch {
+    // standings opcionales; si falla, la vista de grupos quedará vacía
   }
+  if (groupStageComplete) results.groupStandings = porraStandings;
+
+  results.tournament = {
+    updatedAt: results.updatedAt,
+    matches: allMatches,
+    groups: tournamentGroups,
+  };
 
   return { results, unmatched: [...unmatched], groupTotal, groupFinished };
 }

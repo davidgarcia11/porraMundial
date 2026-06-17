@@ -7,6 +7,7 @@ import Standings from './components/Standings.jsx';
 import JornadaView from './components/JornadaView.jsx';
 import ParticipantDetail from './components/ParticipantDetail.jsx';
 import MatchesView from './components/MatchesView.jsx';
+import MundialView from './components/MundialView.jsx';
 
 const EMPTY_RESULTS = {
   groupMatches: {},
@@ -21,6 +22,7 @@ const TABS = [
   { key: 'jornada', label: 'Por jornada' },
   { key: 'detalle', label: 'Detalle participante' },
   { key: 'partidos', label: 'Partidos' },
+  { key: 'mundial', label: 'Mundial' },
 ];
 
 export default function App() {
@@ -109,8 +111,10 @@ export default function App() {
             results={effectiveResults}
             scores={scores}
           />
-        ) : (
+        ) : tab === 'partidos' ? (
           <MatchesView predictions={predictions} results={effectiveResults} />
+        ) : (
+          <MundialView tournament={effectiveResults.tournament} />
         )}
       </main>
 

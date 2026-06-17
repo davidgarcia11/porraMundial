@@ -136,6 +136,40 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .legend-item.on { border-color: var(--accent); background: var(--panel-2); font-weight: 600; }
 .swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
+/* ---- Mundial ---- */
+.subnav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+
+/* grupos */
+.groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+.group-card h4 { margin: 0 0 6px; color: var(--accent); font-size: 0.95rem; }
+table.grp { width: 100%; }
+table.grp th, table.grp td { padding: 6px 7px; }
+table.grp tr.qualify td { background: rgba(45,212,167,0.09); }
+table.grp tr.qualify td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+table.grp .pts { font-weight: 700; color: var(--accent); }
+
+/* cuadro / bracket */
+.bracket { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
+.bracket-col { min-width: 180px; flex: 0 0 auto; }
+.bracket-h { color: var(--accent); font-size: 0.9rem; margin: 0 0 8px; }
+.bracket-match { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; margin-bottom: 10px; }
+.bk-team { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 3px 0; font-size: 0.85rem; color: var(--text); }
+.bk-team.win { color: var(--accent); font-weight: 700; }
+.bk-score { font-variant-numeric: tabular-nums; min-width: 14px; text-align: right; }
+.tbd { color: var(--muted); font-style: italic; }
+
+/* en directo / partidos */
+.day-h { color: var(--muted); font-size: 0.8rem; text-transform: capitalize; margin: 16px 0 6px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+.match-list { display: flex; flex-direction: column; gap: 6px; }
+.mrow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.mrow-team { display: flex; align-items: center; gap: 5px; font-size: 0.86rem; min-width: 0; }
+.mrow-team.home { justify-content: flex-end; text-align: right; }
+.mrow-mid { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 60px; }
+.mrow-score { font-weight: 700; font-variant-numeric: tabular-nums; }
+.mrow-time { color: var(--muted); font-size: 0.82rem; }
+.mrow.live { border-color: #c0392b; }
+.live-badge { color: #ff6b6b; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.03em; }
+
 .muted { color: var(--muted); }
 .small { font-size: 0.8rem; }
 
