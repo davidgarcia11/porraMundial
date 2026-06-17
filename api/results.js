@@ -32,8 +32,9 @@ export default async function handler(req, res) {
       competition,
       predictions: getPredictions(),
     });
-    // Edge cache: sirve la misma respuesta ~2 min y revalida en segundo plano.
-    res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=600');
+    // Caché: el navegador siempre revalida (max-age=0); el CDN sirve la misma
+    // respuesta ~2 min y revalida en segundo plano (stale-while-revalidate).
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=120, stale-while-revalidate=600');
     res.status(200).json(results);
   } catch (e) {
     res.status(502).json({ error: String(e?.message || e) });

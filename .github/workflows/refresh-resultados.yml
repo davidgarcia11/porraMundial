@@ -1,14 +1,14 @@
 name: Refrescar resultados
 
-# Lanza un nuevo despliegue en Vercel periódicamente para que se vuelvan a
-# descargar los resultados del Mundial. No cambia el código: solo llama al
-# Deploy Hook, que reconstruye la rama de producción (main) y re-ejecuta el
-# fetch de la API durante el build.
+# Lanza un despliegue en Vercel periódicamente para refrescar el fichero
+# estático de resultados (public/results.json), que actúa como RESPALDO de la
+# función en vivo /api/results. Como la frescura la da la función, este cron va
+# espaciado (cada 6 h) para gastar menos build minutes.
 
 on:
   schedule:
-    # cada 2 horas (UTC). Ajusta a tu gusto: https://crontab.guru
-    - cron: '0 */2 * * *'
+    # cada 6 horas (UTC). El respaldo no necesita más. https://crontab.guru
+    - cron: '0 */6 * * *'
   workflow_dispatch: {} # botón para lanzarlo a mano desde la pestaña Actions
 
 permissions:
