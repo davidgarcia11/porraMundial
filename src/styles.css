@@ -115,6 +115,7 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .evolution .axis { fill: var(--muted); font-size: 11px; }
 .evolution .axis.y { text-anchor: end; }
 .evolution .axis.x { text-anchor: middle; }
+.evolution .badge { fill: #fff; font-size: 11px; font-weight: 700; text-anchor: middle; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
 .legend-item {
   display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
