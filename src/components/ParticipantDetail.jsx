@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { scoreMatchPrediction, scoreKnockoutPrediction } from '../scoring/engine.js';
 import { MATCH_POINTS } from '../scoring/config.js';
-import { teamName } from '../data/teams.js';
+import { teamName, teamFlag } from '../data/teams.js';
 import { breakdownTotals } from '../utils.js';
+import Team from './Team.jsx';
 
 const KNOCKOUT_LABELS = {
   dieciseisavos: 'Dieciseisavos',
@@ -73,7 +74,7 @@ export default function ParticipantDetail({ predictions, results, scores }) {
               return (
                 <tr key={m.id} className={actual ? '' : 'pending'}>
                   <td>
-                    {teamName(m.home)} <span className="vs">vs</span> {teamName(m.away)}
+                    <Team code={m.home} /> <span className="vs">vs</span> <Team code={m.away} />
                   </td>
                   <td className="mono">
                     {pred.sign} · {pred.h}-{pred.a}
@@ -111,14 +112,14 @@ export default function ParticipantDetail({ predictions, results, scores }) {
                     return (
                       <tr key={m.slot + idx} className={actual ? '' : 'pending'}>
                         <td>
-                          {teamName(p.home)} <span className="vs">-</span> {teamName(p.away)}
+                          <Team code={p.home} /> <span className="vs">-</span> <Team code={p.away} />
                         </td>
                         <td className="mono">
                           {p.sign} · {p.h}-{p.a}
                         </td>
                         <td className="mono">
                           {actual
-                            ? `${teamName(actual.home)} ${actual.h}-${actual.a} ${teamName(actual.away)}`
+                            ? `${teamFlag(actual.home)} ${teamName(actual.home)} ${actual.h}-${actual.a} ${teamFlag(actual.away)} ${teamName(actual.away)}`
                             : '—'}
                         </td>
                         <td className={`num ${d && d.pts ? 'pos' : ''}`}>
@@ -154,8 +155,8 @@ export default function ParticipantDetail({ predictions, results, scores }) {
               return (
                 <tr key={key} className={actual ? '' : 'pending'}>
                   <td>{label}</td>
-                  <td>{isCode ? teamName(pred) : pred}</td>
-                  <td>{actual ? (isCode ? teamName(actual) : actual) : '—'}</td>
+                  <td>{isCode ? `${teamFlag(pred)} ${teamName(pred)}` : pred}</td>
+                  <td>{actual ? (isCode ? `${teamFlag(actual)} ${teamName(actual)}` : actual) : '—'}</td>
                   <td className={`num ${pts ? 'pos' : ''}`}>{actual ? pts : ''}</td>
                 </tr>
               );

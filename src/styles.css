@@ -71,6 +71,53 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .podium.r1 td { background: rgba(245,197,24,0.10); }
 .podium.r2 td { background: rgba(200,208,216,0.08); }
 .podium.r3 td { background: rgba(205,127,50,0.08); }
+/* puesto del podio por color (sin emojis) */
+.podium.r1 .rank { color: var(--gold); font-weight: 700; }
+.podium.r2 .rank { color: var(--silver); font-weight: 700; }
+.podium.r3 .rank { color: var(--bronze); font-weight: 700; }
+
+/* banderas / equipos */
+.team { white-space: nowrap; }
+.flag { margin-right: 5px; }
+.team-name { vertical-align: middle; }
+
+/* banner del líder */
+.leader-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  flex-wrap: wrap; margin-bottom: 14px; padding: 12px 16px;
+  background: linear-gradient(90deg, rgba(245,197,24,0.14), rgba(245,197,24,0.02));
+  border: 1px solid var(--warn-line); border-radius: 12px;
+}
+.leader-main { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.leader-tag {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: #06231b; background: var(--gold); padding: 2px 8px; border-radius: 999px; font-weight: 700;
+}
+.leader-name { font-size: 1.25rem; font-weight: 700; }
+.leader-points { color: var(--gold); font-weight: 700; }
+.leader-rest { display: flex; gap: 16px; flex-wrap: wrap; color: var(--muted); font-size: 0.85rem; }
+.podium-mini .pos { font-weight: 700; margin-right: 4px; }
+.podium-mini .pts { margin-left: 6px; opacity: 0.8; }
+.podium-mini.r2 .pos { color: var(--silver); }
+.podium-mini.r3 .pos { color: var(--bronze); }
+
+/* gráfico de evolución */
+.chart { margin-bottom: 18px; }
+.chart-svg-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.evolution { width: 100%; min-width: 460px; height: auto; display: block; }
+.evolution .grid { stroke: var(--line); stroke-width: 1; }
+.evolution .axis { fill: var(--muted); font-size: 11px; }
+.evolution .axis.y { text-anchor: end; }
+.evolution .axis.x { text-anchor: middle; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
+.legend-item {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--line); color: var(--text);
+  border-radius: 999px; padding: 3px 10px; font-size: 0.78rem;
+}
+.legend-item:hover { border-color: var(--accent-2); }
+.legend-item.on { border-color: var(--accent); background: var(--panel-2); font-weight: 600; }
+.swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
 .muted { color: var(--muted); }
 .small { font-size: 0.8rem; }

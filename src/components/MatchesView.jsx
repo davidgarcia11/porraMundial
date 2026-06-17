@@ -1,5 +1,5 @@
 import { sign } from '../scoring/engine.js';
-import { teamName } from '../data/teams.js';
+import Team from './Team.jsx';
 
 const matchday = (idx) => Math.floor(idx / 24) + 1;
 
@@ -50,7 +50,7 @@ export default function MatchesView({ predictions, results }) {
                     return (
                       <tr key={m.id} className={actual ? '' : 'pending'}>
                         <td>
-                          {teamName(m.home)} <span className="vs">vs</span> {teamName(m.away)}
+                          <Team code={m.home} /> <span className="vs">vs</span> <Team code={m.away} />
                         </td>
                         <td className="num mono">{actual ? `${actual.h}-${actual.a}` : '—'}</td>
                         <td className="num">{actual ? signos : ''}</td>
@@ -82,7 +82,7 @@ export default function MatchesView({ predictions, results }) {
                     {actuals.map((a, i) => (
                       <tr key={i}>
                         <td>
-                          {teamName(a.home)} <span className="vs">vs</span> {teamName(a.away)}
+                          <Team code={a.home} /> <span className="vs">vs</span> <Team code={a.away} />
                         </td>
                         <td className="num mono">
                           {a.h}-{a.a}

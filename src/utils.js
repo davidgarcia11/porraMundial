@@ -12,11 +12,15 @@ export const signLabel = (s) => (s === '1' ? '1' : s === '2' ? '2' : 'X');
 
 export const fmtPred = (p) => (p && p.h != null ? `${p.h}-${p.a}` : '—');
 
-export const medal = (rank) => (rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '');
-
 // short display name for tight columns
 export const shortName = (name) => {
   const parts = name.split(' ');
   if (parts.length === 1) return name;
   return parts[0];
 };
+
+// Paleta de 13 colores distinguibles para el gráfico de evolución.
+export const PALETTE = [
+  '#2dd4a7', '#4f9dff', '#f5c518', '#ff6b6b', '#a78bfa', '#f59e0b', '#34d399',
+  '#f472b6', '#60a5fa', '#fb923c', '#22d3ee', '#c084fc', '#facc15',
+];

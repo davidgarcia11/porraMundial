@@ -84,7 +84,25 @@ export const TEAMS = {
   PAN: { name: 'Panamá', fifa: 'PAN', group: 'L', confident: true, aliases: ['Panama'] },
 };
 
+// Bandera de cada selección (emoji). Escocia e Inglaterra usan los emojis de
+// subdivisión del Reino Unido.
+export const FLAGS = {
+  MXC: '🇲🇽', RPC: '🇨🇿', CDS: '🇰🇷', SDF: '🇿🇦',
+  SZA: '🇨🇭', BYH: '🇧🇦', CND: '🇨🇦', CTR: '🇶🇦',
+  MRC: '🇲🇦', BRS: '🇧🇷', ESC: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'Haití': '🇭🇹',
+  TUR: '🇹🇷', PGY: '🇵🇾', EEU: '🇺🇸', AUS: '🇦🇺',
+  ALM: '🇩🇪', ECU: '🇪🇨', CDM: '🇨🇮', CRZ: '🇨🇼',
+  HOL: '🇳🇱', JPN: '🇯🇵', TNZ: '🇹🇳', SUE: '🇸🇪',
+  BGC: '🇧🇪', EGP: '🇪🇬', IRN: '🇮🇷', NZL: '🇳🇿',
+  SPN: '🇪🇸', URU: '🇺🇾', ARS: '🇸🇦', CVE: '🇨🇻',
+  FRN: '🇫🇷', SNG: '🇸🇳', NOR: '🇳🇴', IRK: '🇮🇶',
+  ARG: '🇦🇷', ATR: '🇦🇹', AGL: '🇩🇿', JRD: '🇯🇴',
+  PTG: '🇵🇹', CLM: '🇨🇴', UZB: '🇺🇿', CNG: '🇨🇩',
+  CRO: '🇭🇷', ING: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', GHA: '🇬🇭', PAN: '🇵🇦',
+};
+
 export const teamName = (code) => TEAMS[code]?.name ?? code;
+export const teamFlag = (code) => FLAGS[code] ?? '';
 export const groupOf = (code) => TEAMS[code]?.group ?? null;
 
 // codes whose decoding still needs confirmation by the organiser

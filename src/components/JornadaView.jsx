@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { medal } from '../utils.js';
+import EvolutionChart from './EvolutionChart.jsx';
 
 export default function JornadaView({ scores }) {
   const { jornadas, standingsByJornada, participants } = scores;
@@ -21,6 +21,10 @@ export default function JornadaView({ scores }) {
   return (
     <section>
       <h2>Clasificación por jornada</h2>
+
+      <h3>Evolución</h3>
+      <EvolutionChart scores={scores} />
+
       <div className="jornada-picker">
         {jornadas.map((j) => (
           <button
@@ -47,7 +51,7 @@ export default function JornadaView({ scores }) {
           <tbody>
             {standings.map((row) => (
               <tr key={row.name} className={row.rank <= 3 ? `podium r${row.rank}` : ''}>
-                <td className="num rank">{medal(row.rank) || row.rank}</td>
+                <td className="num rank">{row.rank}</td>
                 <td className="name">{row.name}</td>
                 <td className="num gained">+{pointsByName[row.name][key] || 0}</td>
                 <td className="num total">{row.points}</td>

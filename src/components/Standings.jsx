@@ -1,4 +1,5 @@
-import { breakdownTotals, medal } from '../utils.js';
+import { breakdownTotals } from '../utils.js';
+import LeaderBanner from './LeaderBanner.jsx';
 
 export default function Standings({ scores }) {
   const order = scores.finalStandings; // [{name, points, rank}]
@@ -7,6 +8,7 @@ export default function Standings({ scores }) {
   return (
     <section>
       <h2>Clasificación general</h2>
+      <LeaderBanner standings={order} />
       <div className="table-wrap">
         <table className="standings">
           <thead>
@@ -27,7 +29,7 @@ export default function Standings({ scores }) {
               const bd = breakdownTotals(p);
               return (
                 <tr key={row.name} className={row.rank <= 3 ? `podium r${row.rank}` : ''}>
-                  <td className="num rank">{medal(row.rank) || row.rank}</td>
+                  <td className="num rank">{row.rank}</td>
                   <td className="name">{row.name}</td>
                   <td className="num total">{row.points}</td>
                   <td className="num">{bd.grupos}</td>

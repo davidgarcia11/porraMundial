@@ -51,7 +51,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1>🏆 Porra del Mundial 2026</h1>
+        <h1>Porra del Mundial 2026</h1>
         <p className="sub">
           {predictions.participants.length} participantes ·{' '}
           {results?.updatedAt
