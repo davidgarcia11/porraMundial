@@ -66,32 +66,35 @@ export default function MatchesView({ predictions, results }) {
 
       {Object.entries(KNOCKOUT_LABELS).map(([round, label]) => {
         const actuals = results.knockoutResults?.[round] || [];
-        if (!actuals.length) return null;
         return (
           <div key={round}>
             <h3>{label}</h3>
-            <div className="table-wrap">
-              <table className="matches">
-                <thead>
-                  <tr>
-                    <th>Partido</th>
-                    <th className="num">Resultado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {actuals.map((a, i) => (
-                    <tr key={i}>
-                      <td>
-                        {teamName(a.home)} <span className="vs">vs</span> {teamName(a.away)}
-                      </td>
-                      <td className="num mono">
-                        {a.h}-{a.a}
-                      </td>
+            {actuals.length ? (
+              <div className="table-wrap">
+                <table className="matches">
+                  <thead>
+                    <tr>
+                      <th>Partido</th>
+                      <th className="num">Resultado</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {actuals.map((a, i) => (
+                      <tr key={i}>
+                        <td>
+                          {teamName(a.home)} <span className="vs">vs</span> {teamName(a.away)}
+                        </td>
+                        <td className="num mono">
+                          {a.h}-{a.a}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="muted small">Aún no se ha disputado.</p>
+            )}
           </div>
         );
       })}
