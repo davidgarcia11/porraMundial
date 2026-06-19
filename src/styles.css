@@ -187,6 +187,23 @@ table.grp .pts { font-weight: 700; color: var(--accent); }
 .prov-tag { color: var(--gold); font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
 .tbd { color: var(--muted); font-style: italic; }
 
+/* cuadro visual conectado */
+.cbracket-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+.cbracket-head { display: flex; margin-bottom: 8px; }
+.cbracket-h { color: var(--accent); font-size: 0.78rem; text-align: center; flex: 0 0 auto; }
+.cbracket { position: relative; }
+.cbracket-lines { position: absolute; top: 0; left: 0; pointer-events: none; }
+.cline { fill: none; stroke: var(--line); stroke-width: 2; }
+.cmatch {
+  position: absolute; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 6px; display: flex; flex-direction: column; justify-content: center;
+  gap: 2px; padding: 3px 7px; overflow: hidden;
+}
+.cb-side { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 0.8rem; min-width: 0; }
+.cb-side .team { min-width: 0; }
+.cb-side .team-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cb-pos { color: var(--muted); font-size: 0.66rem; white-space: nowrap; }
+
 /* en directo / partidos */
 .day-h { color: var(--muted); font-size: 0.8rem; text-transform: capitalize; margin: 16px 0 6px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
 .match-list { display: flex; flex-direction: column; gap: 6px; }
