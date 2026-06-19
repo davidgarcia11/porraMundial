@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { scoreMatchPrediction, scoreKnockoutPrediction } from '../scoring/engine.js';
 import { MATCH_POINTS } from '../scoring/config.js';
 import { teamName, teamFlag } from '../data/teams.js';
@@ -28,8 +28,12 @@ const HONOR_LABELS = {
 const samePair = (a, b) =>
   (a.home === b.home && a.away === b.away) || (a.home === b.away && a.away === b.home);
 
-export default function ParticipantDetail({ predictions, results, scores }) {
-  const [pi, setPi] = useState(0);
+export default function ParticipantDetail({ predictions, results, scores, me }) {
+  const meIdx = predictions.participants.indexOf(me);
+  const [pi, setPi] = useState(meIdx >= 0 ? meIdx : 0);
+  useEffect(() => {
+    if (meIdx >= 0) setPi(meIdx);
+  }, [meIdx]);
   const person = scores.participants[pi];
   const bd = breakdownTotals(person);
 

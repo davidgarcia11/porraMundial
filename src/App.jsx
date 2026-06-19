@@ -141,6 +141,7 @@ export default function App() {
             predictions={predictions}
             results={effectiveResults}
             scores={scores}
+            me={me}
           />
         ) : tab === 'partidos' ? (
           <MatchesView predictions={predictions} results={effectiveResults} />
