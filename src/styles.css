@@ -140,10 +140,16 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .subnav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
 
 /* grupos */
-.groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+.groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
 .group-card h4 { margin: 0 0 6px; color: var(--accent); font-size: 0.95rem; }
-table.grp { width: 100%; }
-table.grp th, table.grp td { padding: 6px 7px; }
+.group-card .table-wrap { overflow: hidden; }
+table.grp { width: 100%; table-layout: fixed; }
+table.grp th, table.grp td { padding: 6px 4px; }
+table.grp th:first-child, table.grp td:first-child { width: 26px; }
+table.grp th.num, table.grp td.num { width: 27px; }
+table.grp td:nth-child(2) { overflow: hidden; }
+table.grp .team { min-width: 0; max-width: 100%; }
+table.grp .team-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 table.grp tr.qualify td { background: rgba(45,212,167,0.09); }
 table.grp tr.qualify td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
 table.grp .pts { font-weight: 700; color: var(--accent); }
