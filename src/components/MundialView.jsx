@@ -2,6 +2,7 @@ import { useState } from 'react';
 import LiveMatchesView from './LiveMatchesView.jsx';
 import GroupsView from './GroupsView.jsx';
 import BracketView from './BracketView.jsx';
+import { useNewBadge } from '../newFeatures.js';
 
 const SUBS = [
   { key: 'live', label: 'En directo' },
@@ -11,6 +12,11 @@ const SUBS = [
 
 export default function MundialView({ tournament }) {
   const [sub, setSub] = useState('live');
+  const { isNew, markSeen } = useNewBadge();
+  const open = (key) => {
+    setSub(key);
+    markSeen(`mundial:${key}`);
+  };
 
   if (!tournament) {
     return (
@@ -29,8 +35,9 @@ export default function MundialView({ tournament }) {
       <h2>Mundial</h2>
       <div className="subnav">
         {SUBS.map((s) => (
-          <button key={s.key} className={sub === s.key ? 'chip active' : 'chip'} onClick={() => setSub(s.key)}>
+          <button key={s.key} className={sub === s.key ? 'chip active' : 'chip'} onClick={() => open(s.key)}>
             {s.label}
+            {isNew(`mundial:${s.key}`) && <span className="new-badge">NUEVO</span>}
           </button>
         ))}
       </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PointsInPlayView from './PointsInPlayView.jsx';
 import CompareView from './CompareView.jsx';
 import StatsView from './StatsView.jsx';
+import { useNewBadge } from '../newFeatures.js';
 
 const SUBS = [
   { key: 'play', label: 'Puntos en juego' },
@@ -11,13 +12,19 @@ const SUBS = [
 
 export default function AnalisisView({ predictions, results, scores, me }) {
   const [sub, setSub] = useState('play');
+  const { isNew, markSeen } = useNewBadge();
+  const open = (key) => {
+    setSub(key);
+    markSeen(`analisis:${key}`);
+  };
   return (
     <section>
       <h2>Análisis</h2>
       <div className="subnav">
         {SUBS.map((s) => (
-          <button key={s.key} className={sub === s.key ? 'chip active' : 'chip'} onClick={() => setSub(s.key)}>
+          <button key={s.key} className={sub === s.key ? 'chip active' : 'chip'} onClick={() => open(s.key)}>
             {s.label}
+            {isNew(`analisis:${s.key}`) && <span className="new-badge">NUEVO</span>}
           </button>
         ))}
       </div>
