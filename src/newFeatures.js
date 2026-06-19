@@ -15,6 +15,7 @@ export const NEW_SINCE = {
   'analisis:play': '2026-06-19',
   'analisis:compare': '2026-06-19',
   'analisis:stats': '2026-06-19',
+  'analisis:prob': '2026-06-19',
 };
 
 const FOUR_DAYS = 4 * 24 * 60 * 60 * 1000;

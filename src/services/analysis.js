@@ -118,7 +118,51 @@ export function compareGroupMatches(predictions, results, i, j) {
   return { rows, identical, aTotal, bTotal };
 }
 
-// "Premios" / estadísticas curiosas a partir de los partidos de grupos.
+// Estimación (aproximada) de probabilidad de ganar la porra. Como el campeón
+// vale 1000, la porra la decide casi siempre acertar al campeón del Mundial:
+// repartimos la probabilidad por los campeones aún vivos (ponderados por cuánta
+// gente los eligió, como aproximación de favoritismo) y, entre quienes eligieron
+// el mismo campeón, según los puntos que llevan. Se recalcula con cada cambio:
+// si un campeón queda eliminado, su probabilidad pasa a 0 y se reparte.
+export function winProbabilities(predictions, scores, tournament) {
+  const alive = aliveTeams(tournament);
+  const totalByName = Object.fromEntries(scores.participants.map((p) => [p.name, p.total]));
+  const names = predictions.participants;
+  const current = names.map((n) => totalByName[n] ?? 0);
+  const champ = predictions.honors.campeon || [];
+
+  const byTeam = {};
+  champ.forEach((code, i) => {
+    if (code && alive.has(code)) (byTeam[code] ||= []).push(i);
+  });
+  const teams = Object.keys(byTeam);
+  const prob = names.map(() => 0);
+
+  if (teams.length) {
+    const totalPickers = teams.reduce((s, T) => s + byTeam[T].length, 0);
+    for (const T of teams) {
+      const idxs = byTeam[T];
+      const pT = idxs.length / totalPickers;
+      const weights = idxs.map((i) => current[i] * current[i] || 1);
+      const sw = weights.reduce((a, b) => a + b, 0);
+      idxs.forEach((i, k) => (prob[i] += pT * (weights[k] / sw)));
+    }
+  } else {
+    // ningún campeón sigue vivo: lo decidiría el resto de puntos -> reparto por puntos
+    const sw = current.reduce((a, b) => a + b, 0) || 1;
+    current.forEach((v, i) => (prob[i] = v / sw));
+  }
+
+  return names
+    .map((name, i) => ({
+      name,
+      prob: prob[i],
+      champion: champ[i] || null,
+      championAlive: champ[i] ? alive.has(champ[i]) : false,
+    }))
+    .sort((a, b) => b.prob - a.prob);
+}
+
 export function computeStats(predictions, results, scores) {
   const n = predictions.participants.length;
   const exact = new Array(n).fill(0);
