@@ -92,7 +92,7 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 tr.me td { background: rgba(79,157,255,0.14); }
 tr.me td:first-child { box-shadow: inset 3px 0 0 var(--accent-2); }
 
-.me-picker { display: flex; align-items: center; gap: 8px; margin: 6px 0 0; font-size: 0.85rem; }
+.me-picker { display: flex; align-items: center; gap: 8px; margin: 10px 0 18px; font-size: 0.85rem; }
 .me-picker label { color: var(--muted); }
 .me-picker select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font-size: 0.85rem; }
 
