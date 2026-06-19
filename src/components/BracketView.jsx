@@ -1,4 +1,5 @@
 import Team from './Team.jsx';
+import { provisionalQualifiers } from '../services/tournamentUtils.js';
 
 const STAGES = [
   ['LAST_32', 'Dieciseisavos'],
@@ -18,6 +19,22 @@ function Side({ team, score, winner }) {
   );
 }
 
+function QualCol({ title, items, highlight }) {
+  return (
+    <div className={`qual-col${highlight ? ' hl' : ''}`}>
+      <h5>{title}</h5>
+      <ul>
+        {items.map((t) => (
+          <li key={(t.group || '') + (t.code || t.name)}>
+            <span className="qg">{t.group}</span>
+            {t.code ? <Team code={t.code} /> : <span className="tbd">{t.name}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 // Cuadro de eliminatorias (se completa solo según avanza el torneo).
 export default function BracketView({ tournament }) {
   const matches = tournament?.matches || [];
@@ -27,8 +44,26 @@ export default function BracketView({ tournament }) {
     return <p className="muted small">El cuadro de eliminatorias aparecerá cuando la organización publique los cruces.</p>;
   }
 
+  const hasRealKnockout = knockout.some((m) => m.home?.code || m.away?.code);
+  const groups = tournament?.groups || {};
+  const q = !hasRealKnockout && Object.keys(groups).length ? provisionalQualifiers(groups) : null;
+
   return (
     <div>
+      {q && (
+        <div className="prov-qual">
+          <h4>Clasificados a dieciseisavos (provisional)</h4>
+          <div className="qual-cols">
+            <QualCol title="Primeros" items={q.firsts} />
+            <QualCol title="Segundos" items={q.seconds} />
+            <QualCol title="Mejores terceros" items={q.thirds} highlight />
+          </div>
+          <p className="muted small">
+            Según la clasificación actual. Los cruces exactos se rellenarán solos al terminar la fase de grupos.
+          </p>
+        </div>
+      )}
+
       <div className="bracket">
         {STAGES.map(([stage, label]) => {
           const ms = knockout.filter((m) => m.stage === stage);

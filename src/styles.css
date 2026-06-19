@@ -164,6 +164,16 @@ table.grp .pts { font-weight: 700; color: var(--accent); }
 .key-dot.q { background: var(--accent); }
 .key-dot.t { background: var(--gold); }
 
+/* clasificados provisionales */
+.prov-qual { margin-bottom: 20px; }
+.prov-qual h4 { color: var(--accent); margin: 0 0 8px; font-size: 0.95rem; }
+.qual-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+.qual-col h5 { margin: 0 0 6px; font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.qual-col.hl h5 { color: var(--gold); }
+.qual-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.qual-col li { display: flex; align-items: center; gap: 6px; font-size: 0.88rem; }
+.qg { display: inline-block; min-width: 16px; color: var(--muted); font-weight: 700; font-size: 0.76rem; }
+
 /* cuadro / bracket */
 .bracket { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
 .bracket-col { min-width: 180px; flex: 0 0 auto; }
