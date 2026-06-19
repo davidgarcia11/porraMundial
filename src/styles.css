@@ -152,7 +152,17 @@ table.grp .team { min-width: 0; max-width: 100%; }
 table.grp .team-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 table.grp tr.qualify td { background: rgba(45,212,167,0.09); }
 table.grp tr.qualify td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+table.grp tr.third-q td { background: rgba(245,197,24,0.08); }
+table.grp tr.third-q td:first-child { box-shadow: inset 2px 0 0 var(--gold); }
 table.grp .pts { font-weight: 700; color: var(--accent); }
+
+.thirds { margin-top: 18px; max-width: 460px; }
+.thirds h4 { color: var(--accent); font-size: 0.95rem; margin: 0 0 6px; }
+.thirds-tbl tr.tq td { background: rgba(245,197,24,0.08); }
+.thirds-tbl tr.tq td:first-child { box-shadow: inset 2px 0 0 var(--gold); }
+.key-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: middle; margin: 0 3px 0 6px; }
+.key-dot.q { background: var(--accent); }
+.key-dot.t { background: var(--gold); }
 
 /* cuadro / bracket */
 .bracket { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
