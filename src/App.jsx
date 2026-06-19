@@ -29,11 +29,30 @@ const TABS = [
 
 const REFRESH_MS = 120000; // auto-refresco cada 2 min
 
+// Pestañas con funciones nuevas: muestran "NUEVO" hasta que cada usuario las abre.
+const NEW_TABS = ['mundial', 'analisis'];
+
 export default function App() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('general');
   const [me, setMe] = useState(() => localStorage.getItem('porra-me') || '');
+  const [seen, setSeen] = useState(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem('porra-seen') || '[]'));
+    } catch {
+      return new Set();
+    }
+  });
+
+  const openTab = (key) => {
+    setTab(key);
+    if (NEW_TABS.includes(key) && !seen.has(key)) {
+      const next = new Set(seen).add(key);
+      setSeen(next);
+      localStorage.setItem('porra-seen', JSON.stringify([...next]));
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -122,9 +141,10 @@ export default function App() {
           <button
             key={t.key}
             className={tab === t.key ? 'tab active' : 'tab'}
-            onClick={() => setTab(t.key)}
+            onClick={() => openTab(t.key)}
           >
             {t.label}
+            {NEW_TABS.includes(t.key) && !seen.has(t.key) && <span className="new-badge">NUEVO</span>}
           </button>
         ))}
       </nav>
