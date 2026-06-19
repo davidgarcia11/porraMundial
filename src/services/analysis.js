@@ -1,6 +1,6 @@
 // Cálculos de análisis: equipos vivos, puntos en juego, comparador y estadísticas.
 import { TEAMS } from '../data/teams.js';
-import { MATCH_POINTS, HONOR_POINTS } from '../scoring/config.js';
+import { MATCH_POINTS, HONOR_POINTS, POSITION_POINTS, QUALIFIER_POINTS } from '../scoring/config.js';
 import { scoreMatchPrediction, sign } from '../scoring/engine.js';
 
 const ALL_CODES = Object.keys(TEAMS);
@@ -32,30 +32,67 @@ export function aliveTeams(tournament) {
   return alive;
 }
 
-const HONORS = [
-  ['campeon', 'Campeón', HONOR_POINTS.campeon],
-  ['subcampeon', 'Subcampeón', HONOR_POINTS.subcampeon],
-  ['tercero', '3º puesto', HONOR_POINTS.tercero],
-];
+const maxMatch = (round) => {
+  const t = MATCH_POINTS[round];
+  return t.signo + t.diferencia + t.exacto;
+};
+const KO_COUNTS = { dieciseisavos: 16, octavos: 8, cuartos: 4, semifinales: 2, tercer_puesto: 1, final: 1 };
+const TEAM_HONORS = ['campeon', 'subcampeon', 'tercero'];
 
-// Por participante: puntos actuales, estado del campeón y puntos extra aún posibles.
-export function pointsInPlay(predictions, scores, tournament) {
-  const alive = aliveTeams(tournament);
+// Máximo de puntos que un participante AÚN podría sumar (cota optimista: asume
+// que a partir de ahora le sale todo perfecto, salvo lo ya imposible).
+function maxRemaining(predictions, results, alive, pi) {
+  let rem = 0;
+
+  // partidos de grupos sin resultado
+  for (const m of predictions.groupMatches) {
+    if (!hasResult(results.groupMatches?.[m.id])) rem += maxMatch('grupos');
+  }
+
+  // posiciones de grupo (se puntúan al cerrar los grupos)
+  const groupsComplete = Object.keys(results.groupStandings || {}).length >= 12;
+  if (!groupsComplete) {
+    let positions = 0;
+    for (const g of Object.values(predictions.groupPositions)) positions += g.length;
+    rem += POSITION_POINTS * positions;
+  }
+
+  // puntos por clasificado (por ronda, si aún no se conoce)
+  for (const [round, value] of Object.entries(QUALIFIER_POINTS)) {
+    const resolved = (results.qualified?.[round] || []).length > 0;
+    if (!resolved) rem += value * (predictions.qualifiers[round]?.length || 0);
+  }
+
+  // partidos de eliminatorias no jugados
+  for (const [round, total] of Object.entries(KO_COUNTS)) {
+    const played = (results.knockoutResults?.[round] || []).length;
+    const left = total - played;
+    if (left > 0) rem += maxMatch(round) * left;
+  }
+
+  // cuadro de honor
+  for (const [key, pts] of Object.entries(HONOR_POINTS)) {
+    const actual = results.honors?.[key];
+    if (actual != null && actual !== '') continue; // ya resuelto
+    if (TEAM_HONORS.includes(key)) {
+      const code = predictions.honors[key]?.[pi];
+      if (code && !alive.has(code)) continue; // su equipo ya no puede
+    }
+    rem += pts;
+  }
+
+  return rem;
+}
+
+// Por participante: puntos actuales, máximo alcanzable y estado del campeón.
+export function pointsInPlay(predictions, results, scores) {
+  const alive = aliveTeams(results.tournament);
   const byName = Object.fromEntries(scores.participants.map((p) => [p.name, p]));
   return predictions.participants.map((name, pi) => {
-    const honors = HONORS.map(([key, label, pts]) => {
-      const code = predictions.honors[key]?.[pi] ?? null;
-      const isAlive = code ? alive.has(code) : false;
-      return { key, label, pts, code, alive: isAlive };
-    });
-    const extraInPlay = honors.reduce((s, h) => s + (h.alive ? h.pts : 0), 0);
-    const champion = honors[0];
-    return {
-      name,
-      current: byName[name]?.total ?? 0,
-      champion,
-      extraInPlay,
-    };
+    const code = predictions.honors.campeon?.[pi] ?? null;
+    const champion = { code, alive: code ? alive.has(code) : false };
+    const current = byName[name]?.total ?? 0;
+    return { name, current, champion, maxAchievable: current + maxRemaining(predictions, results, alive, pi) };
   });
 }
 

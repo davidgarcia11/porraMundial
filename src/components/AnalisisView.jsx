@@ -22,7 +22,7 @@ export default function AnalisisView({ predictions, results, scores, me }) {
         ))}
       </div>
       {sub === 'play' ? (
-        <PointsInPlayView predictions={predictions} scores={scores} tournament={results.tournament} me={me} />
+        <PointsInPlayView predictions={predictions} results={results} scores={scores} me={me} />
       ) : sub === 'compare' ? (
         <CompareView predictions={predictions} results={results} scores={scores} />
       ) : (
