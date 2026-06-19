@@ -75,6 +75,8 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .total { font-weight: 700; color: var(--accent); }
 .rank { width: 40px; }
 .name { font-weight: 500; }
+/* nombre de participante en una sola línea (filas de igual alto) */
+.pname { display: block; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.85rem; white-space: nowrap; }
 /* en Detalle/Partidos, los marcadores nunca se parten; deja respirar la fila */
 .matches td { vertical-align: middle; line-height: 1.5; }

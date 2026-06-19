@@ -31,7 +31,7 @@ export default function Standings({ scores, me }) {
               return (
                 <tr key={row.name} className={`${row.rank <= 3 ? `podium r${row.rank}` : ''}${me === row.name ? ' me' : ''}`}>
                   <td className="num rank">{row.rank}</td>
-                  <td className="name">{row.name}</td>
+                  <td className="name"><span className="pname" title={row.name}>{row.name}</span></td>
                   <td className="num total">{row.points}</td>
                   <td className="num">{bd.grupos}</td>
                   <td className="num">{bd.posiciones}</td>

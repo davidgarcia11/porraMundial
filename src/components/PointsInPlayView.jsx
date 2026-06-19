@@ -31,7 +31,7 @@ export default function PointsInPlayView({ predictions, results, scores, me }) {
               const out = r.maxAchievable < leaderNow;
               return (
                 <tr key={r.name} className={me === r.name ? 'me' : ''}>
-                  <td className="name">{r.name}</td>
+                  <td className="name"><span className="pname" title={r.name}>{r.name}</span></td>
                   <td className="num total">{r.current}</td>
                   <td className={`num ${out ? 'muted' : ''}`}>{r.maxAchievable}</td>
                   <td>
