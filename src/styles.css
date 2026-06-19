@@ -120,6 +120,13 @@ tr.me td:first-child { box-shadow: inset 3px 0 0 var(--accent-2); }
 .stat-value { color: var(--accent); font-weight: 700; }
 .stat-suffix { color: var(--muted); font-weight: 400; font-size: 0.8rem; }
 
+/* sistema de puntuación (desplegable) */
+.rules { margin-top: 18px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px 14px; background: var(--panel); }
+.rules summary { cursor: pointer; font-weight: 600; color: var(--accent); padding: 4px 0; }
+.rules h4 { margin: 14px 0 6px; font-size: 0.9rem; color: var(--text); }
+.rules-tbl { width: 100%; max-width: 420px; }
+.rules-tbl td, .rules-tbl th { padding: 5px 8px; }
+
 /* banderas / equipos */
 .team { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 .flag { line-height: 1; }

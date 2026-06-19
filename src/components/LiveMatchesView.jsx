@@ -62,6 +62,7 @@ export default function LiveMatchesView({ tournament }) {
           </button>
         ))}
       </div>
+      <p className="muted small">Horas en tu zona horaria. Los partidos en juego se marcan «● EN DIRECTO».</p>
 
       {!list.length && <p className="muted small">No hay partidos en esta categoría.</p>}
 

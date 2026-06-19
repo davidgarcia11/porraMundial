@@ -1,5 +1,6 @@
 import { breakdownTotals } from '../utils.js';
 import LeaderBanner from './LeaderBanner.jsx';
+import RulesNote from './RulesNote.jsx';
 
 export default function Standings({ scores, me }) {
   const order = scores.finalStandings; // [{name, points, rank}]
@@ -47,6 +48,7 @@ export default function Standings({ scores, me }) {
         Grupos = aciertos de partidos de grupos · Posic. = posiciones exactas de grupo · Clasif. =
         puntos por equipo clasificado · Elim. = partidos de eliminatorias · Extra = cuadro de honor.
       </p>
+      <RulesNote />
     </section>
   );
 }

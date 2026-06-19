@@ -153,9 +153,10 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        Cómo se puntúa: aciertas el <b>signo</b>, la <b>diferencia</b> de goles y el{' '}
-        <b>resultado exacto</b> suman (acumulativo). Además puntúan los <b>equipos clasificados</b>{' '}
-        a cada ronda y el <b>cuadro de honor</b> (campeón, goleadores, mejor jugador…).
+        Cómo se puntúa: el <b>signo</b>, la <b>diferencia</b> de goles y el <b>resultado exacto</b> de
+        cada partido (acumulativo), las <b>posiciones exactas de grupo</b>, los <b>equipos clasificados</b>{' '}
+        a cada ronda y el <b>cuadro de honor</b> (campeón, goleadores, mejor jugador…). Detalle completo
+        en «Sistema de puntuación», en la Clasificación general.
       </footer>
     </div>
   );

@@ -29,6 +29,10 @@ export default function CompareView({ predictions, results, scores, me }) {
 
   return (
     <div>
+      <p className="muted small">
+        Compara dos participantes partido a partido en la fase de grupos: su apuesta (signo · marcador)
+        y los puntos de cada uno. En verde, quién puntúa más en ese partido.
+      </p>
       <div className="cmp-head">
         <Picker value={i} onChange={setI} />
         <span className="cmp-vs">vs</span>

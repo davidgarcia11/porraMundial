@@ -59,6 +59,11 @@ export default function ParticipantDetail({ predictions, results, scores, me }) 
         <Card label="Extra" value={bd.extra} />
       </div>
 
+      <p className="muted small">
+        Desglose de sus puntos por categoría. En las tablas, "Apuesta" es su pronóstico
+        (signo · marcador) y "Pts" lo que sumó en ese partido.
+      </p>
+
       <h3>Partidos de grupos</h3>
       <div className="table-wrap">
         <table className="matches">

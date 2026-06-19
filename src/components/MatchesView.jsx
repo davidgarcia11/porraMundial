@@ -18,6 +18,10 @@ export default function MatchesView({ predictions, results }) {
   return (
     <section>
       <h2>Partidos y resultados</h2>
+      <p className="muted small">
+        Resultado real de cada partido y, en grupos, cuántos de los {predictions.participants.length}{' '}
+        participantes aciertan el <b>signo</b> (1X2) y cuántos el <b>resultado exacto</b>.
+      </p>
 
       {jornadas.map((md) => (
         <div key={md}>
