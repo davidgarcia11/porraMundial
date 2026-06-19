@@ -88,6 +88,37 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .podium.r1 .rank { color: var(--gold); font-weight: 700; }
 .podium.r2 .rank { color: var(--silver); font-weight: 700; }
 .podium.r3 .rank { color: var(--bronze); font-weight: 700; }
+/* fila del usuario ("resáltame") */
+tr.me td { background: rgba(79,157,255,0.14); }
+tr.me td:first-child { box-shadow: inset 3px 0 0 var(--accent-2); }
+
+.me-picker { display: flex; align-items: center; gap: 8px; margin: 6px 0 0; font-size: 0.85rem; }
+.me-picker label { color: var(--muted); }
+.me-picker select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font-size: 0.85rem; }
+
+.status { font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 700; }
+.status.alive { background: rgba(45,212,167,0.18); color: var(--accent); }
+.status.out { background: rgba(255,107,107,0.18); color: #ff6b6b; }
+
+/* comparador */
+.cmp-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.cmp-head select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.cmp-vs { color: var(--muted); font-weight: 700; }
+.cmp-summary { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; margin-bottom: 16px; }
+.cmp-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; text-align: center; }
+.cmp-card.lead { border-color: var(--accent); }
+.cmp-name { font-weight: 600; font-size: 0.9rem; }
+.cmp-total { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+.cmp-mid { text-align: center; }
+.cmp-ident { font-size: 1.4rem; font-weight: 800; color: var(--accent-2); }
+
+/* estadísticas */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.stat-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.stat-label { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.stat-name { font-weight: 700; font-size: 1.05rem; margin: 2px 0; }
+.stat-value { color: var(--accent); font-weight: 700; }
+.stat-suffix { color: var(--muted); font-weight: 400; font-size: 0.8rem; }
 
 /* banderas / equipos */
 .team { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }

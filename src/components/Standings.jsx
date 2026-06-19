@@ -1,7 +1,7 @@
 import { breakdownTotals } from '../utils.js';
 import LeaderBanner from './LeaderBanner.jsx';
 
-export default function Standings({ scores }) {
+export default function Standings({ scores, me }) {
   const order = scores.finalStandings; // [{name, points, rank}]
   const byName = Object.fromEntries(scores.participants.map((p) => [p.name, p]));
 
@@ -28,7 +28,7 @@ export default function Standings({ scores }) {
               const p = byName[row.name];
               const bd = breakdownTotals(p);
               return (
-                <tr key={row.name} className={row.rank <= 3 ? `podium r${row.rank}` : ''}>
+                <tr key={row.name} className={`${row.rank <= 3 ? `podium r${row.rank}` : ''}${me === row.name ? ' me' : ''}`}>
                   <td className="num rank">{row.rank}</td>
                   <td className="name">{row.name}</td>
                   <td className="num total">{row.points}</td>

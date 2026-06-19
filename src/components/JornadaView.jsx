@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import EvolutionChart from './EvolutionChart.jsx';
 
-export default function JornadaView({ scores }) {
+export default function JornadaView({ scores, me }) {
   const { jornadas, standingsByJornada, participants } = scores;
   const pointsByName = Object.fromEntries(participants.map((p) => [p.name, p.jornada]));
 
@@ -50,7 +50,7 @@ export default function JornadaView({ scores }) {
           </thead>
           <tbody>
             {standings.map((row) => (
-              <tr key={row.name} className={row.rank <= 3 ? `podium r${row.rank}` : ''}>
+              <tr key={row.name} className={`${row.rank <= 3 ? `podium r${row.rank}` : ''}${me === row.name ? ' me' : ''}`}>
                 <td className="num rank">{row.rank}</td>
                 <td className="name">{row.name}</td>
                 <td className="num gained">+{pointsByName[row.name][key] || 0}</td>

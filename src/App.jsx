@@ -8,6 +8,7 @@ import JornadaView from './components/JornadaView.jsx';
 import ParticipantDetail from './components/ParticipantDetail.jsx';
 import MatchesView from './components/MatchesView.jsx';
 import MundialView from './components/MundialView.jsx';
+import AnalisisView from './components/AnalisisView.jsx';
 
 const EMPTY_RESULTS = {
   groupMatches: {},
@@ -23,19 +24,40 @@ const TABS = [
   { key: 'detalle', label: 'Detalle participante' },
   { key: 'partidos', label: 'Partidos' },
   { key: 'mundial', label: 'Mundial' },
+  { key: 'analisis', label: 'Análisis' },
 ];
+
+const REFRESH_MS = 120000; // auto-refresco cada 2 min
 
 export default function App() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('general');
+  const [me, setMe] = useState(() => localStorage.getItem('porra-me') || '');
 
   useEffect(() => {
-    loadResults().then((r) => {
-      setResults(r);
+    let active = true;
+    const refresh = () => loadResults().then((r) => {
+      if (!active) return;
+      if (r) setResults(r);
       setLoading(false);
     });
+    refresh();
+    const id = setInterval(refresh, REFRESH_MS); // se actualiza solo
+    const onFocus = () => refresh();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      active = false;
+      clearInterval(id);
+      window.removeEventListener('focus', onFocus);
+    };
   }, []);
+
+  const chooseMe = (name) => {
+    setMe(name);
+    if (name) localStorage.setItem('porra-me', name);
+    else localStorage.removeItem('porra-me');
+  };
 
   const effectiveResults = results || EMPTY_RESULTS;
   const scores = useMemo(
@@ -60,6 +82,15 @@ export default function App() {
             ? `Resultados: ${new Date(results.updatedAt).toLocaleString('es-ES')}`
             : 'Sin resultados todavía'}
         </p>
+        <div className="me-picker">
+          <label>Soy:</label>
+          <select value={me} onChange={(e) => chooseMe(e.target.value)}>
+            <option value="">— elige tu nombre —</option>
+            {predictions.participants.map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+        </div>
       </header>
 
       {UNCONFIRMED_CODES.length > 0 && (
@@ -102,9 +133,9 @@ export default function App() {
         {loading ? (
           <p className="muted">Cargando…</p>
         ) : tab === 'general' ? (
-          <Standings scores={scores} />
+          <Standings scores={scores} me={me} />
         ) : tab === 'jornada' ? (
-          <JornadaView scores={scores} />
+          <JornadaView scores={scores} me={me} />
         ) : tab === 'detalle' ? (
           <ParticipantDetail
             predictions={predictions}
@@ -113,8 +144,10 @@ export default function App() {
           />
         ) : tab === 'partidos' ? (
           <MatchesView predictions={predictions} results={effectiveResults} />
-        ) : (
+        ) : tab === 'mundial' ? (
           <MundialView tournament={effectiveResults.tournament} />
+        ) : (
+          <AnalisisView predictions={predictions} results={effectiveResults} scores={scores} me={me} />
         )}
       </main>
 
