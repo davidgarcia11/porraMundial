@@ -182,6 +182,9 @@ table.grp .pts { font-weight: 700; color: var(--accent); }
 .bk-team { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 3px 0; font-size: 0.85rem; color: var(--text); }
 .bk-team.win { color: var(--accent); font-weight: 700; }
 .bk-score { font-variant-numeric: tabular-nums; min-width: 14px; text-align: right; }
+.bk-pos { color: var(--muted); font-size: 0.7rem; white-space: nowrap; }
+.bracket-match.prov { border-style: dashed; }
+.prov-tag { color: var(--gold); font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
 .tbd { color: var(--muted); font-style: italic; }
 
 /* en directo / partidos */

@@ -1,5 +1,5 @@
 import Team from './Team.jsx';
-import { provisionalQualifiers } from '../services/tournamentUtils.js';
+import { provisionalR32 } from '../services/tournamentUtils.js';
 
 const STAGES = [
   ['LAST_32', 'Dieciseisavos'],
@@ -19,18 +19,11 @@ function Side({ team, score, winner }) {
   );
 }
 
-function QualCol({ title, items, highlight }) {
+function ProvSide({ side }) {
   return (
-    <div className={`qual-col${highlight ? ' hl' : ''}`}>
-      <h5>{title}</h5>
-      <ul>
-        {items.map((t) => (
-          <li key={(t.group || '') + (t.code || t.name)}>
-            <span className="qg">{t.group}</span>
-            {t.code ? <Team code={t.code} /> : <span className="tbd">{t.name}</span>}
-          </li>
-        ))}
-      </ul>
+    <div className="bk-team">
+      <span className="bk-name">{side.code ? <Team code={side.code} /> : <span className="tbd">Por determinar</span>}</span>
+      <span className="bk-pos">{side.label}</span>
     </div>
   );
 }
@@ -45,27 +38,32 @@ export default function BracketView({ tournament }) {
   }
 
   const hasRealKnockout = knockout.some((m) => m.home?.code || m.away?.code);
-  const groups = tournament?.groups || {};
-  const q = !hasRealKnockout && Object.keys(groups).length ? provisionalQualifiers(groups) : null;
+  const provR32 = !hasRealKnockout ? provisionalR32(tournament?.groups || {}) : null;
 
   return (
     <div>
-      {q && (
-        <div className="prov-qual">
-          <h4>Clasificados a dieciseisavos (provisional)</h4>
-          <div className="qual-cols">
-            <QualCol title="Primeros" items={q.firsts} />
-            <QualCol title="Segundos" items={q.seconds} />
-            <QualCol title="Mejores terceros" items={q.thirds} highlight />
-          </div>
-          <p className="muted small">
-            Según la clasificación actual. Los cruces exactos se rellenarán solos al terminar la fase de grupos.
-          </p>
-        </div>
+      {provR32 && (
+        <p className="muted small">
+          Dieciseisavos <b>provisionales</b> según la clasificación actual; los cruces reales se
+          rellenan solos al terminar los grupos.
+        </p>
       )}
-
       <div className="bracket">
         {STAGES.map(([stage, label]) => {
+          // dieciseisavos provisionales mientras no haya equipos reales
+          if (stage === 'LAST_32' && provR32) {
+            return (
+              <div key={stage} className="bracket-col">
+                <h4 className="bracket-h">{label} <span className="prov-tag">prov.</span></h4>
+                {provR32.map((m, i) => (
+                  <div key={i} className="bracket-match prov">
+                    <ProvSide side={m.a} />
+                    <ProvSide side={m.b} />
+                  </div>
+                ))}
+              </div>
+            );
+          }
           const ms = knockout.filter((m) => m.stage === stage);
           if (!ms.length) return null;
           return (
@@ -73,12 +71,10 @@ export default function BracketView({ tournament }) {
               <h4 className="bracket-h">{label}</h4>
               {ms.map((m) => {
                 const played = m.score.home != null && m.score.away != null;
-                const homeWin = m.winner === 'HOME_TEAM';
-                const awayWin = m.winner === 'AWAY_TEAM';
                 return (
                   <div key={m.id} className="bracket-match">
-                    <Side team={m.home} score={played ? m.score.home : null} winner={homeWin} />
-                    <Side team={m.away} score={played ? m.score.away : null} winner={awayWin} />
+                    <Side team={m.home} score={played ? m.score.home : null} winner={m.winner === 'HOME_TEAM'} />
+                    <Side team={m.away} score={played ? m.score.away : null} winner={m.winner === 'AWAY_TEAM'} />
                   </div>
                 );
               })}
