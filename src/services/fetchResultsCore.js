@@ -206,10 +206,26 @@ export async function buildResults({
   }
   if (groupStageComplete) results.groupStandings = porraStandings;
 
+  // ---- goleadores (para la estimación de probabilidad y la vista de goleadores) ----
+  let scorers = [];
+  try {
+    const sc = await api(`/competitions/${competition}/scorers?limit=25`);
+    scorers = (sc.scorers || [])
+      .map((s) => ({
+        name: s.player?.name || s.playerName || '',
+        team: s.team ? toCode(s.team) : null,
+        goals: s.goals ?? s.numberOfGoals ?? 0,
+      }))
+      .filter((s) => s.name);
+  } catch {
+    // endpoint opcional; si no está disponible, sin goleadores
+  }
+
   results.tournament = {
     updatedAt: results.updatedAt,
     matches: allMatches,
     groups: tournamentGroups,
+    scorers,
   };
 
   return { results, unmatched: [...unmatched], groupTotal, groupFinished };

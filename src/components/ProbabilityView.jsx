@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import Team from './Team.jsx';
 import { winProbabilities } from '../services/analysis.js';
 
@@ -5,16 +6,19 @@ const pct = (p) => `${(p * 100).toFixed(1)}%`;
 
 // Estimación de probabilidad de ganar la porra.
 export default function ProbabilityView({ predictions, results, scores, me }) {
-  const rows = winProbabilities(predictions, scores, results.tournament);
+  const rows = useMemo(() => winProbabilities(predictions, results, scores), [predictions, results, scores]);
   const max = rows[0]?.prob || 1;
+  const hasScorers = (results.tournament?.scorers || []).length > 0;
 
   return (
     <div>
       <p className="muted small">
-        Estimación: como el campeón vale <b>1000</b>, la porra la decide casi siempre acertarlo. Se
-        reparte según los campeones aún vivos (ponderados por cuánta gente los eligió) y, entre
-        quienes eligieron el mismo, según los puntos actuales. Es aproximada y se recalcula sola: si
-        un campeón se elimina, su probabilidad pasa a 0.
+        Estimación por simulación (Montecarlo): tiene en cuenta los <b>puntos actuales</b> y lo que
+        aún se puede ganar con <b>campeón</b> (1000), <b>subcampeón</b> (50), <b>3º</b> (25)
+        {hasScorers ? <> y <b>goleadores</b> (Bota de Oro/Plata/Bronce, según los goles actuales)</> : null}.
+        Se simulan miles de finales del torneo y se cuenta quién gana. Es aproximada y se recalcula
+        sola: si un campeón se elimina, deja de sumar.
+        {!hasScorers && ' (Los goleadores se incluirán cuando la API los proporcione.)'}
       </p>
       <div className="table-wrap">
         <table className="standings">

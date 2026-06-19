@@ -118,45 +118,141 @@ export function compareGroupMatches(predictions, results, i, j) {
   return { rows, identical, aTotal, bTotal };
 }
 
-// Estimación (aproximada) de probabilidad de ganar la porra. Como el campeón
-// vale 1000, la porra la decide casi siempre acertar al campeón del Mundial:
-// repartimos la probabilidad por los campeones aún vivos (ponderados por cuánta
-// gente los eligió, como aproximación de favoritismo) y, entre quienes eligieron
-// el mismo campeón, según los puntos que llevan. Se recalcula con cada cambio:
-// si un campeón queda eliminado, su probabilidad pasa a 0 y se reparte.
-export function winProbabilities(predictions, scores, tournament) {
-  const alive = aliveTeams(tournament);
+// --- Estimación de probabilidad de ganar la porra (Monte Carlo) ---
+// Tiene en cuenta: puntos actuales (base) + lo que aún se puede ganar con
+// campeón (1000), subcampeón (50), 3º (25) y, si la API da goleadores, Bota de
+// Oro/Plata/Bronce (25/15/10). Se simulan miles de finales del torneo: en cada
+// una se sortea campeón/subcampeón/3º (entre equipos vivos, ponderados por el
+// "favoritismo" según las predicciones) y el top‑3 de goleadores (según los
+// goles actuales), se suma todo y se cuenta quién gana. Se recalcula con cada
+// actualización: un campeón eliminado deja de poder sortearse.
+
+const normName = (s) =>
+  (s ?? '').toString().trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const lastToken = (s) => normName(s).split(/\s+/).filter(Boolean).pop() || '';
+const samePlayer = (pred, actual) => {
+  if (!pred || !actual) return false;
+  const a = normName(pred);
+  const b = normName(actual);
+  return a === b || a.includes(b) || b.includes(a) || lastToken(a) === lastToken(b);
+};
+
+// PRNG determinista para que el resultado sea estable entre renders.
+function mulberry32(a) {
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function sampleWithoutReplacement(items, weights, k, rnd) {
+  const idx = items.map((_, i) => i);
+  const out = [];
+  for (let n = 0; n < k && idx.length; n++) {
+    let tot = 0;
+    for (const i of idx) tot += weights[i];
+    let pos = 0;
+    if (tot <= 0) {
+      pos = Math.floor(rnd() * idx.length);
+    } else {
+      let r = rnd() * tot;
+      for (let p = 0; p < idx.length; p++) {
+        r -= weights[idx[p]];
+        if (r <= 0) {
+          pos = p;
+          break;
+        }
+        pos = p;
+      }
+    }
+    out.push(items[idx[pos]]);
+    idx.splice(pos, 1);
+  }
+  return out;
+}
+
+// "Fuerza" de cada equipo según el consenso de la porra (a cuántos predijeron
+// que llega lejos). Sirve para sortear campeón/subcampeón/3º de forma realista.
+function teamStrength(predictions, alive) {
+  const countRows = (rows) => {
+    const m = {};
+    for (const row of rows || []) for (const code of row.preds) m[code] = (m[code] || 0) + 1;
+    return m;
+  };
+  const champ = {};
+  for (const c of predictions.honors.campeon || []) if (c) champ[c] = (champ[c] || 0) + 1;
+  const fin = countRows(predictions.qualifiers.final);
+  const semis = countRows(predictions.qualifiers.semifinales);
+  const cuartos = countRows(predictions.qualifiers.cuartos);
+  const teams = [...alive];
+  const weights = teams.map(
+    (T) => 0.3 + (champ[T] || 0) * 3 + (fin[T] || 0) * 1.5 + (semis[T] || 0) * 0.8 + (cuartos[T] || 0) * 0.4
+  );
+  return { teams, weights };
+}
+
+export function winProbabilities(predictions, results, scores, sims = 6000) {
+  const alive = aliveTeams(results.tournament);
   const totalByName = Object.fromEntries(scores.participants.map((p) => [p.name, p.total]));
   const names = predictions.participants;
   const current = names.map((n) => totalByName[n] ?? 0);
+
+  const H = results.honors || {};
+  const resolved = (k) => H[k] != null && H[k] !== '';
+  const champPending = !resolved('campeon');
+  const subPending = !resolved('subcampeon');
+  const terPending = !resolved('tercero');
+
+  const { teams, weights } = teamStrength(predictions, alive);
+  const scorers = results.tournament?.scorers || [];
+  const scorerNames = scorers.map((s) => s.name);
+  const scorerW = scorers.map((s) => (s.goals || 0) + 0.5);
+  const botasPending = !resolved('botaOro');
+
   const champ = predictions.honors.campeon || [];
+  const sub = predictions.honors.subcampeon || [];
+  const ter = predictions.honors.tercero || [];
+  const bo = predictions.honors.botaOro || [];
+  const bp = predictions.honors.botaPlata || [];
+  const bb = predictions.honors.botaBronce || [];
 
-  const byTeam = {};
-  champ.forEach((code, i) => {
-    if (code && alive.has(code)) (byTeam[code] ||= []).push(i);
-  });
-  const teams = Object.keys(byTeam);
-  const prob = names.map(() => 0);
+  const wins = names.map(() => 0);
+  const rnd = mulberry32(0x9e3779b9);
 
-  if (teams.length) {
-    const totalPickers = teams.reduce((s, T) => s + byTeam[T].length, 0);
-    for (const T of teams) {
-      const idxs = byTeam[T];
-      const pT = idxs.length / totalPickers;
-      const weights = idxs.map((i) => current[i] * current[i] || 1);
-      const sw = weights.reduce((a, b) => a + b, 0);
-      idxs.forEach((i, k) => (prob[i] += pT * (weights[k] / sw)));
+  for (let s = 0; s < sims; s++) {
+    const [C, R, T3] = sampleWithoutReplacement(teams, weights, 3, rnd);
+    const topS = botasPending && scorerNames.length ? sampleWithoutReplacement(scorerNames, scorerW, 3, rnd) : [];
+
+    let best = -Infinity;
+    let bestIdxs = [];
+    for (let i = 0; i < names.length; i++) {
+      let tot = current[i];
+      if (champPending && C && champ[i] === C) tot += 1000;
+      if (subPending && R && sub[i] === R) tot += 50;
+      if (terPending && T3 && ter[i] === T3) tot += 25;
+      if (topS.length) {
+        if (bo[i] && samePlayer(bo[i], topS[0])) tot += 25;
+        if (topS[1] && bp[i] && samePlayer(bp[i], topS[1])) tot += 15;
+        if (topS[2] && bb[i] && samePlayer(bb[i], topS[2])) tot += 10;
+      }
+      if (tot > best) {
+        best = tot;
+        bestIdxs = [i];
+      } else if (tot === best) {
+        bestIdxs.push(i);
+      }
     }
-  } else {
-    // ningún campeón sigue vivo: lo decidiría el resto de puntos -> reparto por puntos
-    const sw = current.reduce((a, b) => a + b, 0) || 1;
-    current.forEach((v, i) => (prob[i] = v / sw));
+    const share = 1 / bestIdxs.length;
+    for (const i of bestIdxs) wins[i] += share;
   }
 
   return names
     .map((name, i) => ({
       name,
-      prob: prob[i],
+      prob: wins[i] / sims,
       champion: champ[i] || null,
       championAlive: champ[i] ? alive.has(champ[i]) : false,
     }))
