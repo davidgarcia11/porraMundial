@@ -11,10 +11,11 @@ const SUBS = [
 ];
 
 export default function MundialView({ tournament }) {
-  const [sub, setSub] = useState('live');
+  const [sub, setSub] = useState(() => localStorage.getItem('porra-sub-mundial') || 'live');
   const { isNew, markSeen } = useNewBadge();
   const open = (key) => {
     setSub(key);
+    localStorage.setItem('porra-sub-mundial', key);
     markSeen(`mundial:${key}`);
   };
 

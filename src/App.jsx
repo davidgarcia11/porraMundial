@@ -33,12 +33,16 @@ const REFRESH_MS = 120000; // auto-refresco cada 2 min
 export default function App() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('general');
+  const [tab, setTab] = useState(() => {
+    const saved = localStorage.getItem('porra-tab');
+    return TABS.some((t) => t.key === saved) ? saved : 'general';
+  });
   const [me, setMe] = useState(() => localStorage.getItem('porra-me') || '');
   const { isNew, markSeen } = useNewBadge();
 
   const openTab = (key) => {
     setTab(key);
+    localStorage.setItem('porra-tab', key);
     markSeen(key);
   };
 

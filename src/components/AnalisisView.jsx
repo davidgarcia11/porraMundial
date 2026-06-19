@@ -11,10 +11,11 @@ const SUBS = [
 ];
 
 export default function AnalisisView({ predictions, results, scores, me }) {
-  const [sub, setSub] = useState('play');
+  const [sub, setSub] = useState(() => localStorage.getItem('porra-sub-analisis') || 'play');
   const { isNew, markSeen } = useNewBadge();
   const open = (key) => {
     setSub(key);
+    localStorage.setItem('porra-sub-analisis', key);
     markSeen(`analisis:${key}`);
   };
   return (
