@@ -294,4 +294,6 @@ table.grp .pts { font-weight: 700; color: var(--accent); }
   .matches { min-width: 0; }
   .cards .card { min-width: 84px; }
   .leader-banner { padding: 10px 12px; }
+  .tabs { gap: 5px; }
+  .tab { padding: 7px 12px; font-size: 0.84rem; }
 }

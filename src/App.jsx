@@ -19,9 +19,9 @@ const EMPTY_RESULTS = {
 };
 
 const TABS = [
-  { key: 'general', label: 'Clasificación general' },
-  { key: 'jornada', label: 'Por jornada' },
-  { key: 'detalle', label: 'Detalle participante' },
+  { key: 'general', label: 'General' },
+  { key: 'jornada', label: 'Jornada' },
+  { key: 'detalle', label: 'Detalle' },
   { key: 'partidos', label: 'Partidos' },
   { key: 'mundial', label: 'Mundial' },
   { key: 'analisis', label: 'Análisis' },
