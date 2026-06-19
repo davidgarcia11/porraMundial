@@ -1,9 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 // Funciones nuevas: clave -> fecha en que se marcó como "nueva".
-// El badge "NUEVO" se muestra durante 4 días desde esa fecha (y desaparece antes
-// para cada usuario en cuanto abre la sección). Para marcar algo nuevo, añade su
-// clave aquí con la fecha de hoy.
+// El badge "NUEVO" se muestra durante 4 días desde esa fecha, para todos, y NO
+// desaparece al pulsarlo. Para marcar algo nuevo, añade su clave con la fecha de hoy.
 export const NEW_SINCE = {
   // pestañas
   mundial: '2026-06-19',
@@ -19,36 +18,16 @@ export const NEW_SINCE = {
 };
 
 const FOUR_DAYS = 4 * 24 * 60 * 60 * 1000;
-const STORE = 'porra-seen';
-
-const readSeen = () => {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(STORE) || '[]'));
-  } catch {
-    return new Set();
-  }
-};
 
 const withinWindow = (key, now = Date.now()) => {
   const s = NEW_SINCE[key];
   return !!s && now - new Date(s).getTime() < FOUR_DAYS;
 };
 
-// Hook: isNew(key) y markSeen(key), persistido por dispositivo en localStorage.
+// Hook: isNew(key) muestra "NUEVO" durante 4 días (no se quita al abrir).
+// markSeen se mantiene por compatibilidad pero ya no hace nada.
 export function useNewBadge() {
-  const [seen, setSeen] = useState(readSeen);
-
-  const isNew = useCallback((key) => withinWindow(key) && !seen.has(key), [seen]);
-
-  const markSeen = useCallback((key) => {
-    if (!NEW_SINCE[key]) return;
-    setSeen((prev) => {
-      if (prev.has(key)) return prev;
-      const next = new Set(prev).add(key);
-      localStorage.setItem(STORE, JSON.stringify([...next]));
-      return next;
-    });
-  }, []);
-
+  const isNew = useCallback((key) => withinWindow(key), []);
+  const markSeen = useCallback(() => {}, []);
   return { isNew, markSeen };
 }
