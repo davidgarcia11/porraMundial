@@ -1,7 +1,8 @@
 // Cálculos de análisis: equipos vivos, puntos en juego, comparador y estadísticas.
 import { TEAMS } from '../data/teams.js';
 import { MATCH_POINTS, HONOR_POINTS, POSITION_POINTS, QUALIFIER_POINTS } from '../scoring/config.js';
-import { scoreMatchPrediction, sign } from '../scoring/engine.js';
+import { scoreMatchPrediction, sign, computeScores } from '../scoring/engine.js';
+import { provisionalR32 } from './tournamentUtils.js';
 
 const ALL_CODES = Object.keys(TEAMS);
 const hasResult = (m) => m && Number.isFinite(m.h) && Number.isFinite(m.a);
@@ -194,61 +195,169 @@ function teamStrength(predictions, alive) {
   return { teams, weights };
 }
 
-export function winProbabilities(predictions, results, scores, sims = 6000) {
-  const alive = aliveTeams(results.tournament);
-  const totalByName = Object.fromEntries(scores.participants.map((p) => [p.name, p.total]));
+const poisson = (l, rnd) => {
+  const L = Math.exp(-l);
+  let k = 0;
+  let p = 1;
+  do {
+    k++;
+    p *= rnd();
+  } while (p > L);
+  return k - 1;
+};
+
+// Agrupa los partidos de grupos por grupo (una vez).
+function buildGroupFixtures(predictions) {
+  const byGroup = {};
+  predictions.groupMatches.forEach((m, idx) => {
+    const g = TEAMS[m.home]?.group;
+    if (!g) return;
+    (byGroup[g] ||= []).push({ id: m.id, home: m.home, away: m.away, matchday: Math.floor(idx / 24) + 1 });
+  });
+  return byGroup;
+}
+
+// Tabla de cada grupo a partir de un mapa de resultados.
+function computeGroupStandings(byGroup, gm) {
+  const out = {};
+  for (const [g, fixtures] of Object.entries(byGroup)) {
+    const stat = {};
+    const ensure = (c) => (stat[c] ||= { code: c, points: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, playedGames: 0, won: 0, draw: 0, lost: 0 });
+    for (const f of fixtures) {
+      const A = ensure(f.home);
+      const B = ensure(f.away);
+      const r = gm[f.id];
+      if (!r) continue;
+      A.goalsFor += r.h; A.goalsAgainst += r.a; B.goalsFor += r.a; B.goalsAgainst += r.h;
+      A.playedGames++; B.playedGames++;
+      if (r.h > r.a) { A.points += 3; A.won++; B.lost++; }
+      else if (r.h < r.a) { B.points += 3; B.won++; A.lost++; }
+      else { A.points++; B.points++; A.draw++; B.draw++; }
+    }
+    const rows = Object.values(stat);
+    rows.forEach((r) => (r.goalDifference = r.goalsFor - r.goalsAgainst));
+    rows.sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor || a.code.localeCompare(b.code));
+    rows.forEach((r, i) => (r.position = i + 1));
+    out[g] = rows;
+  }
+  return out;
+}
+
+// Topología del cuadro (qué cruces alimentan a cada ronda).
+const OCT_FEED = [[0, 2], [1, 4], [3, 5], [6, 7], [10, 11], [8, 9], [13, 15], [12, 14]];
+const CUA_FEED = [[0, 1], [4, 5], [2, 3], [6, 7]];
+const SEM_FEED = [[0, 1], [2, 3]];
+
+function simulateKnockout(r32, strength, rnd) {
+  const ko = { dieciseisavos: [], octavos: [], cuartos: [], semifinales: [], tercer_puesto: [], final: [] };
+  const str = (c) => strength[c] || 0.3;
+  const play = (cA, cB) => {
+    if (!cA || !cB) {
+      const w = cA || cB;
+      return { home: cA || cB, away: cB || cA, h: 1, a: 0, winner: w, loser: null };
+    }
+    const aWins = rnd() < str(cA) / (str(cA) + str(cB));
+    const wG = 1 + poisson(0.7, rnd);
+    let lG = poisson(0.8, rnd);
+    if (lG >= wG) lG = wG - 1;
+    const winner = aWins ? cA : cB;
+    const loser = aWins ? cB : cA;
+    return aWins ? { home: cA, away: cB, h: wG, a: lG, winner, loser } : { home: cA, away: cB, h: lG, a: wG, winner, loser };
+  };
+  const push = (round, r) => ko[round].push({ home: r.home, away: r.away, h: r.h, a: r.a });
+
+  const r32w = [];
+  r32.forEach((m) => { const r = play(m.a.code, m.b.code); push('dieciseisavos', r); r32w.push(r.winner); });
+  const octw = []; OCT_FEED.forEach(([i, j]) => { const r = play(r32w[i], r32w[j]); push('octavos', r); octw.push(r.winner); });
+  const cuaw = []; CUA_FEED.forEach(([i, j]) => { const r = play(octw[i], octw[j]); push('cuartos', r); cuaw.push(r.winner); });
+  const semw = []; const seml = [];
+  SEM_FEED.forEach(([i, j]) => { const r = play(cuaw[i], cuaw[j]); push('semifinales', r); semw.push(r.winner); seml.push(r.loser); });
+  const f = play(semw[0], semw[1]); push('final', f);
+  const tp = play(seml[0], seml[1]); push('tercer_puesto', tp);
+
+  return {
+    koResults: ko,
+    qualified: {
+      octavos: r32w.filter(Boolean),
+      cuartos: octw.filter(Boolean),
+      semifinales: cuaw.filter(Boolean),
+      final: semw.filter(Boolean),
+      tercer_cuarto: seml.filter(Boolean),
+    },
+    champion: f.winner,
+    subcampeon: f.loser,
+    tercero: tp.winner,
+  };
+}
+
+// Probabilidad de ganar la porra por simulación completa del torneo restante.
+export function winProbabilities(predictions, results, scores, sims = 2500) {
   const names = predictions.participants;
-  const current = names.map((n) => totalByName[n] ?? 0);
+  const idxByName = Object.fromEntries(names.map((n, i) => [n, i]));
+  const realGM = results.groupMatches || {};
+  const realHonors = results.honors || {};
+  const byGroup = buildGroupFixtures(predictions);
 
-  const H = results.honors || {};
-  const resolved = (k) => H[k] != null && H[k] !== '';
-  const champPending = !resolved('campeon');
-  const subPending = !resolved('subcampeon');
-  const terPending = !resolved('tercero');
+  const { teams: stT, weights: stW } = teamStrength(predictions, new Set(Object.keys(TEAMS)));
+  const strength = {};
+  stT.forEach((c, i) => (strength[c] = stW[i]));
 
-  const { teams, weights } = teamStrength(predictions, alive);
   const scorers = results.tournament?.scorers || [];
   const scorerNames = scorers.map((s) => s.name);
   const scorerW = scorers.map((s) => (s.goals || 0) + 0.5);
-  const botasPending = !resolved('botaOro');
-
-  const champ = predictions.honors.campeon || [];
-  const sub = predictions.honors.subcampeon || [];
-  const ter = predictions.honors.tercero || [];
-  const bo = predictions.honors.botaOro || [];
-  const bp = predictions.honors.botaPlata || [];
-  const bb = predictions.honors.botaBronce || [];
 
   const wins = names.map(() => 0);
   const rnd = mulberry32(0x9e3779b9);
 
   for (let s = 0; s < sims; s++) {
-    const [C, R, T3] = sampleWithoutReplacement(teams, weights, 3, rnd);
-    const topS = botasPending && scorerNames.length ? sampleWithoutReplacement(scorerNames, scorerW, 3, rnd) : [];
-
+    // 1) resultados de grupos (reales + simulados)
+    const gm = {};
+    predictions.groupMatches.forEach((m, idx) => {
+      const r = realGM[m.id];
+      if (r && Number.isFinite(r.h)) gm[m.id] = { h: r.h, a: r.a, matchday: r.matchday || Math.floor(idx / 24) + 1 };
+      else gm[m.id] = { h: poisson(1.3, rnd), a: poisson(1.3, rnd), matchday: Math.floor(idx / 24) + 1 };
+    });
+    // 2) clasificaciones de grupo y cuadro
+    const simGroups = computeGroupStandings(byGroup, gm);
+    const r32 = provisionalR32(simGroups);
+    if (!r32) continue;
+    const ko = simulateKnockout(r32, strength, rnd);
+    const dieci = [];
+    r32.forEach((m) => { if (m.a.code) dieci.push(m.a.code); if (m.b.code) dieci.push(m.b.code); });
+    const standingsCodes = {};
+    for (const [g, rows] of Object.entries(simGroups)) standingsCodes[g] = rows.map((r) => r.code);
+    // 3) goleadores -> botas
+    const topS = scorerNames.length ? sampleWithoutReplacement(scorerNames, scorerW, 3, rnd) : [];
+    // 4) montar resultados (respetando lo ya resuelto) y puntuar con el motor real
+    const simResults = {
+      groupMatches: gm,
+      groupStandings: standingsCodes,
+      qualified: { dieciseisavos: dieci, ...ko.qualified },
+      knockoutResults: ko.koResults,
+      honors: {
+        campeon: realHonors.campeon || ko.champion,
+        subcampeon: realHonors.subcampeon || ko.subcampeon,
+        tercero: realHonors.tercero || ko.tercero,
+        botaOro: realHonors.botaOro || topS[0] || null,
+        botaPlata: realHonors.botaPlata || topS[1] || null,
+        botaBronce: realHonors.botaBronce || topS[2] || null,
+        balonOro: realHonors.balonOro || null,
+        mejorPortero: realHonors.mejorPortero || null,
+      },
+    };
+    const sc = computeScores(predictions, simResults);
     let best = -Infinity;
-    let bestIdxs = [];
-    for (let i = 0; i < names.length; i++) {
-      let tot = current[i];
-      if (champPending && C && champ[i] === C) tot += 1000;
-      if (subPending && R && sub[i] === R) tot += 50;
-      if (terPending && T3 && ter[i] === T3) tot += 25;
-      if (topS.length) {
-        if (bo[i] && samePlayer(bo[i], topS[0])) tot += 25;
-        if (topS[1] && bp[i] && samePlayer(bp[i], topS[1])) tot += 15;
-        if (topS[2] && bb[i] && samePlayer(bb[i], topS[2])) tot += 10;
-      }
-      if (tot > best) {
-        best = tot;
-        bestIdxs = [i];
-      } else if (tot === best) {
-        bestIdxs.push(i);
-      }
+    let bestNames = [];
+    for (const p of sc.participants) {
+      if (p.total > best) { best = p.total; bestNames = [p.name]; }
+      else if (p.total === best) bestNames.push(p.name);
     }
-    const share = 1 / bestIdxs.length;
-    for (const i of bestIdxs) wins[i] += share;
+    const share = 1 / bestNames.length;
+    for (const nm of bestNames) wins[idxByName[nm]] += share;
   }
 
+  const alive = aliveTeams(results.tournament);
+  const champ = predictions.honors.campeon || [];
   return names
     .map((name, i) => ({
       name,

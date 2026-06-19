@@ -177,13 +177,23 @@ export function computeScores(predictions, results = {}) {
 
   // ---- Honors / Cuadro de honor ----
   const honorIsName = new Set(['botaOro', 'botaPlata', 'botaBronce', 'balonOro', 'mejorPortero']);
+  // nombres de jugador: comparación tolerante ("Mbappe" == "Kylian Mbappé").
+  const sameName = (a, b) => {
+    const na = norm(a);
+    const nb = norm(b);
+    if (!na || !nb) return false;
+    if (na === nb) return true;
+    const la = na.split(/\s+/).pop();
+    const lb = nb.split(/\s+/).pop();
+    return na.includes(nb) || nb.includes(na) || la === lb;
+  };
   for (const [key, value] of Object.entries(HONOR_POINTS)) {
     const actual = res.honors[key];
     if (actual === undefined || actual === null || actual === '') continue;
     const preds = honors[key];
     if (!preds) continue;
     preds.forEach((pred, pi) => {
-      const match = honorIsName.has(key) ? norm(pred) === norm(actual) : pred === actual;
+      const match = honorIsName.has(key) ? sameName(pred, actual) : pred === actual;
       if (match) {
         const person = people[pi];
         add(person, HONORS_JORNADA, value, (p) => (person.breakdown.honors[key] = (person.breakdown.honors[key] || 0) + p));
