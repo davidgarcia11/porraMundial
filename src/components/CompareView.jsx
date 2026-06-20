@@ -56,15 +56,12 @@ export default function CompareView({ predictions, results, scores, me }) {
       </div>
 
       <div className="table-wrap">
-        <table className="matches">
+        <table className="matches cmp-tbl">
           <thead>
             <tr>
               <th>Partido</th>
               <th className="num">{names[i].split(' ')[0]}</th>
-              <th className="num">Pts</th>
               <th className="num">{names[j].split(' ')[0]}</th>
-              <th className="num">Pts</th>
-              <th className="num">Real</th>
             </tr>
           </thead>
           <tbody>
@@ -72,12 +69,18 @@ export default function CompareView({ predictions, results, scores, me }) {
               const played = !!r.actual;
               return (
                 <tr key={r.id} className={played ? '' : 'pending'}>
-                  <td><Matchup home={r.home} away={r.away} /></td>
-                  <td className="num mono">{r.a.pred.sign}·{r.a.pred.h}-{r.a.pred.a}</td>
-                  <td className={`num ${played && r.a.pts > r.b.pts ? 'pos' : ''}`}>{played ? r.a.pts : ''}</td>
-                  <td className="num mono">{r.b.pred.sign}·{r.b.pred.h}-{r.b.pred.a}</td>
-                  <td className={`num ${played && r.b.pts > r.a.pts ? 'pos' : ''}`}>{played ? r.b.pts : ''}</td>
-                  <td className="num mono">{played ? `${r.actual.h}-${r.actual.a}` : '—'}</td>
+                  <td>
+                    <Matchup home={r.home} away={r.away} />
+                    <span className="cmp-real">{played ? `${r.actual.h}-${r.actual.a}` : '—'}</span>
+                  </td>
+                  <td className={`num cmp-cell ${played && r.a.pts > r.b.pts ? 'win' : ''}`}>
+                    <span className="mono">{r.a.pred.sign}·{r.a.pred.h}-{r.a.pred.a}</span>
+                    {played && <span className="cmp-pts">{r.a.pts}</span>}
+                  </td>
+                  <td className={`num cmp-cell ${played && r.b.pts > r.a.pts ? 'win' : ''}`}>
+                    <span className="mono">{r.b.pred.sign}·{r.b.pred.h}-{r.b.pred.a}</span>
+                    {played && <span className="cmp-pts">{r.b.pts}</span>}
+                  </td>
                 </tr>
               );
             })}
