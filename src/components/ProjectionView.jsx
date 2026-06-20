@@ -22,9 +22,7 @@ export default function ProjectionView({ predictions, results, scores, me }) {
             <tr>
               <th className="num">#</th>
               <th>Participante</th>
-              <th className="num">Ahora</th>
               <th className="num total">Proyectado</th>
-              <th className="num">+</th>
             </tr>
           </thead>
           <tbody>
@@ -32,17 +30,17 @@ export default function ProjectionView({ predictions, results, scores, me }) {
               <tr key={r.name} className={me === r.name ? 'me' : ''}>
                 <td className="num rank">{i + 1}</td>
                 <td className="name"><span className="pname" title={r.name}>{r.name}</span></td>
-                <td className="num">{r.current}</td>
-                <td className="num total">{r.projected}</td>
-                <td className="num gained">+{r.projected - r.current}</td>
+                <td className="num total">
+                  {r.projected} <span className="gained">+{r.projected - r.current}</span>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <p className="muted small">
-        "+" = lo que ganaría ahora mismo por el orden actual de los grupos (posiciones y clasificados).
-        Los puntos de eliminatorias y del cuadro de honor llegarán cuando se jueguen.
+        "Proyectado" = puntos actuales + lo que ganaría ahora por el orden de los grupos (el "+":
+        posiciones y clasificados). Los de eliminatorias y cuadro de honor llegarán al jugarse.
       </p>
     </div>
   );
