@@ -1,4 +1,4 @@
-import Team from './Team.jsx';
+import { teamFlag, teamName } from '../data/teams.js';
 import { pointsInPlay } from '../services/analysis.js';
 
 // Puntos aún en juego: máximo alcanzable y estado del campeón de cada uno.
@@ -12,8 +12,8 @@ export default function PointsInPlayView({ predictions, results, scores, me }) {
     <div>
       <p className="muted small">
         "Máx. alcanzable" = puntos actuales + todo lo que aún podría sumar si le saliera perfecto
-        (partidos por jugar, posiciones, clasificados, eliminatorias y cuadro de honor). Como el
-        campeón vale <b>1000</b>, su estado es decisivo.
+        (partidos por jugar, posiciones, clasificados, eliminatorias y cuadro de honor). La bandera es
+        su campeón (con ✗ si ya está eliminado); como vale <b>1000</b>, es decisivo.
       </p>
       <div className="table-wrap">
         <table className="standings">
@@ -22,26 +22,27 @@ export default function PointsInPlayView({ predictions, results, scores, me }) {
               <th>Participante</th>
               <th className="num">Puntos</th>
               <th className="num">Máx. alcanzable</th>
-              <th>Su campeón</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => {
-              // ¿puede aún alcanzar/superar al actual líder?
               const out = r.maxAchievable < leaderNow;
               return (
                 <tr key={r.name} className={me === r.name ? 'me' : ''}>
-                  <td className="name"><span className="pname" title={r.name}>{r.name}</span></td>
-                  <td className="num total">{r.current}</td>
-                  <td className={`num ${out ? 'muted' : ''}`}>{r.maxAchievable}</td>
-                  <td>
-                    {r.champion.code ? <Team code={r.champion.code} /> : '—'}{' '}
+                  <td className="name">
+                    <span className="pname" title={r.name}>{r.name}</span>
                     {r.champion.code && (
-                      <span className={`status ${r.champion.alive ? 'alive' : 'out'}`}>
-                        {r.champion.alive ? 'vivo' : 'eliminado'}
+                      <span
+                        className={`champ-mini${r.champion.alive ? '' : ' out'}`}
+                        title={`Campeón: ${teamName(r.champion.code)}${r.champion.alive ? '' : ' (eliminado)'}`}
+                      >
+                        {teamFlag(r.champion.code)}
+                        {!r.champion.alive && <span className="champ-x">✗</span>}
                       </span>
                     )}
                   </td>
+                  <td className="num total">{r.current}</td>
+                  <td className={`num ${out ? 'muted' : ''}`}>{r.maxAchievable}</td>
                 </tr>
               );
             })}

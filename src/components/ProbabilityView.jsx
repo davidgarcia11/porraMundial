@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import Team from './Team.jsx';
+import { teamFlag, teamName } from '../data/teams.js';
 import { winProbabilities } from '../services/analysis.js';
 
 const pct = (p) => `${(p * 100).toFixed(1)}%`;
@@ -26,17 +26,23 @@ export default function ProbabilityView({ predictions, results, scores, me }) {
           <thead>
             <tr>
               <th>Participante</th>
-              <th>Su campeón</th>
               <th className="num">Prob.</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.name} className={me === r.name ? 'me' : ''}>
-                <td className="name"><span className="pname" title={r.name}>{r.name}</span></td>
-                <td>
-                  {r.champion ? <Team code={r.champion} /> : '—'}{' '}
-                  {r.champion && !r.championAlive && <span className="status out">eliminado</span>}
+                <td className="name">
+                  <span className="pname" title={r.name}>{r.name}</span>
+                  {r.champion && (
+                    <span
+                      className={`champ-mini${r.championAlive ? '' : ' out'}`}
+                      title={`Campeón: ${teamName(r.champion)}${r.championAlive ? '' : ' (eliminado)'}`}
+                    >
+                      {teamFlag(r.champion)}
+                      {!r.championAlive && <span className="champ-x">✗</span>}
+                    </span>
+                  )}
                 </td>
                 <td className="num prob-cell">
                   <span className="prob-bar" style={{ width: `${(r.prob / max) * 100}%` }} />
