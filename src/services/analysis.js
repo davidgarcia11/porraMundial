@@ -299,12 +299,29 @@ export function winProbabilities(predictions, results, scores, sims = 2500) {
   const byGroup = buildGroupFixtures(predictions);
 
   const { teams: stT, weights: stW } = teamStrength(predictions, new Set(Object.keys(TEAMS)));
+  const consensus = {};
+  stT.forEach((c, i) => (consensus[c] = stW[i]));
+  // forma actual de cada equipo (según la clasificación en vivo): los que van
+  // bien ahora pesan más en quién gana el torneo -> reflejan las circunstancias.
+  const liveGroups = results.tournament?.groups || {};
+  const perf = {};
+  let maxPerf = 0;
+  for (const rows of Object.values(liveGroups))
+    for (const r of rows) {
+      const v = (r.points || 0) + 0.5 * (r.goalDifference || 0);
+      perf[r.code] = v;
+      if (v > maxPerf) maxPerf = v;
+    }
   const strength = {};
-  stT.forEach((c, i) => (strength[c] = stW[i]));
+  for (const c of Object.keys(TEAMS)) {
+    const f = maxPerf > 0 ? (perf[c] || 0) / maxPerf : 0;
+    strength[c] = (consensus[c] || 0.3) * (1 + 1.2 * f);
+  }
 
   const scorers = results.tournament?.scorers || [];
   const scorerNames = scorers.map((s) => s.name);
-  const scorerW = scorers.map((s) => (s.goals || 0) + 0.5);
+  // el goleador líder pesa mucho más (cuadrático): si tu goleador va 1º, sube tu probabilidad.
+  const scorerW = scorers.map((s) => (s.goals || 0) * (s.goals || 0) + 0.3);
 
   const wins = names.map(() => 0);
   const rnd = mulberry32(0x9e3779b9);
@@ -366,6 +383,83 @@ export function winProbabilities(predictions, results, scores, sims = 2500) {
       championAlive: champ[i] ? alive.has(champ[i]) : false,
     }))
     .sort((a, b) => b.prob - a.prob);
+}
+
+// Índice de "potencial": cuánto puede llegar a sumar cada uno si acierta lo que
+// le queda, AJUSTADO por sus circunstancias actuales (solo cuentan campeones/
+// equipos aún vivos, y las botas según la posición actual de su goleador). No es
+// una probabilidad (no suma 100%): es el techo realista de cada participante.
+export function potentialIndex(predictions, results, scores) {
+  const alive = aliveTeams(results.tournament);
+  const totalByName = Object.fromEntries(scores.participants.map((p) => [p.name, p.total]));
+  const names = predictions.participants;
+  const H = results.honors || {};
+  const resolved = (k) => H[k] != null && H[k] !== '';
+  const scorers = results.tournament?.scorers || [];
+  const scorerRank = (pred) => {
+    if (!pred) return null;
+    const i = scorers.findIndex((s) => samePlayer(pred, s.name));
+    return i < 0 ? null : i + 1;
+  };
+  // valor de una bota según la posición actual del goleador elegido
+  const botaValue = (pred, base) => {
+    const r = scorerRank(pred);
+    if (r == null) return 0;
+    if (r === 1) return base;
+    if (r <= 3) return base * 0.6;
+    if (r <= 10) return base * 0.3;
+    return base * 0.1;
+  };
+
+  const groupsComplete = Object.keys(results.groupStandings || {}).length >= 12;
+
+  return names
+    .map((name, pi) => {
+      let pot = totalByName[name] ?? 0;
+
+      // partidos de grupos sin jugar (asume que los acierta)
+      for (const m of predictions.groupMatches)
+        if (!(results.groupMatches?.[m.id] && Number.isFinite(results.groupMatches[m.id].h))) pot += maxMatch('grupos');
+
+      // posiciones de grupo (si no han terminado)
+      if (!groupsComplete) {
+        let positions = 0;
+        for (const g of Object.values(predictions.groupPositions)) positions += g.length;
+        pot += POSITION_POINTS * positions;
+      }
+
+      // clasificados: solo equipos que SIGUEN vivos
+      for (const [round, value] of Object.entries(QUALIFIER_POINTS)) {
+        const set = new Set((predictions.qualifiers[round] || []).flatMap((r) => r.preds));
+        let count = 0;
+        for (const code of set) if (alive.has(code)) count++;
+        pot += value * count;
+      }
+
+      // partidos de eliminatorias cuyos dos equipos siguen vivos
+      for (const round of Object.keys(KO_COUNTS)) {
+        const matches = predictions.knockoutMatches[round] || [];
+        for (const m of matches) {
+          const p = m.preds[pi];
+          if (p && p.home && p.away && alive.has(p.home) && alive.has(p.away)) pot += maxMatch(round);
+        }
+      }
+
+      // cuadro de honor por equipos: solo si su pick sigue vivo (y no resuelto)
+      if (!resolved('campeon') && predictions.honors.campeon[pi] && alive.has(predictions.honors.campeon[pi])) pot += HONOR_POINTS.campeon;
+      if (!resolved('subcampeon') && predictions.honors.subcampeon[pi] && alive.has(predictions.honors.subcampeon[pi])) pot += HONOR_POINTS.subcampeon;
+      if (!resolved('tercero') && predictions.honors.tercero[pi] && alive.has(predictions.honors.tercero[pi])) pot += HONOR_POINTS.tercero;
+
+      // botas: según la posición actual de su goleador
+      if (!resolved('botaOro')) {
+        pot += botaValue(predictions.honors.botaOro[pi], HONOR_POINTS.botaOro);
+        pot += botaValue(predictions.honors.botaPlata[pi], HONOR_POINTS.botaPlata);
+        pot += botaValue(predictions.honors.botaBronce[pi], HONOR_POINTS.botaBronce);
+      }
+
+      return { name, current: totalByName[name] ?? 0, potential: Math.round(pot) };
+    })
+    .sort((a, b) => b.potential - a.potential);
 }
 
 export function computeStats(predictions, results, scores) {

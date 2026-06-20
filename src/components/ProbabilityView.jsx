@@ -16,8 +16,9 @@ export default function ProbabilityView({ predictions, results, scores, me }) {
         Estimación por simulación (Montecarlo): se simulan miles de veces <b>todo lo que queda</b> del
         torneo —partidos de grupos y eliminatorias, posiciones, clasificados, campeón (1000),
         subcampeón (50), 3º (25){hasScorers ? <> y goleadores (Bota de Oro/Plata/Bronce)</> : null}— se
-        suma a los <b>puntos actuales</b> y se cuenta quién gana cada vez. Es aproximada y se recalcula
-        sola: si un campeón se elimina, deja de poder salir.
+        suma a los <b>puntos actuales</b> y se cuenta quién gana cada vez. Pesan las circunstancias
+        actuales: los equipos que van mejor ahora y tener tu goleador 1º te suben. Es aproximada y se
+        recalcula sola: si un campeón se elimina, deja de poder salir.
         {!hasScorers && ' (Los goleadores se incluirán cuando la API los proporcione.)'}
       </p>
       <div className="table-wrap">
