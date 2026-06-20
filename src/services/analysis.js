@@ -2,7 +2,7 @@
 import { TEAMS } from '../data/teams.js';
 import { MATCH_POINTS, HONOR_POINTS, POSITION_POINTS, QUALIFIER_POINTS } from '../scoring/config.js';
 import { scoreMatchPrediction, sign, computeScores } from '../scoring/engine.js';
-import { provisionalR32 } from './tournamentUtils.js';
+import { provisionalR32, provisionalQualifiers } from './tournamentUtils.js';
 
 const ALL_CODES = Object.keys(TEAMS);
 const hasResult = (m) => m && Number.isFinite(m.h) && Number.isFinite(m.a);
@@ -460,6 +460,41 @@ export function potentialIndex(predictions, results, scores) {
       return { name, current: totalByName[name] ?? 0, potential: Math.round(pot) };
     })
     .sort((a, b) => b.potential - a.potential);
+}
+
+// Proyección "si los grupos acabaran como ahora": puntúa con la clasificación
+// actual de los grupos (posiciones exactas + clasificados a dieciseisavos), para
+// ver quién va mejor según lo que ya está acertando del sistema de puntuación.
+export function currentProjection(predictions, results, scores) {
+  const groups = results.tournament?.groups || {};
+  const hasGroups = Object.keys(groups).length > 0;
+  const standingsCodes = {};
+  for (const [g, rows] of Object.entries(groups)) standingsCodes[g] = rows.map((r) => r.code);
+
+  let dieci = [];
+  if (hasGroups) {
+    const q = provisionalQualifiers(groups);
+    dieci = [...q.firsts, ...q.seconds, ...q.thirds].map((t) => t.code).filter(Boolean);
+  }
+
+  const frozen = {
+    groupMatches: results.groupMatches || {},
+    groupStandings: standingsCodes,
+    qualified: { dieciseisavos: dieci },
+    knockoutResults: {},
+    honors: {},
+  };
+  const proj = computeScores(predictions, frozen);
+  const projByName = Object.fromEntries(proj.participants.map((p) => [p.name, p.total]));
+  const curByName = Object.fromEntries(scores.participants.map((p) => [p.name, p.total]));
+
+  return predictions.participants
+    .map((name) => ({
+      name,
+      current: curByName[name] ?? 0,
+      projected: projByName[name] ?? 0,
+    }))
+    .sort((a, b) => b.projected - a.projected || b.current - a.current);
 }
 
 export function computeStats(predictions, results, scores) {
