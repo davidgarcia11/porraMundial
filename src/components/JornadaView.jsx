@@ -44,8 +44,8 @@ export default function JornadaView({ scores, me, predictions, results }) {
             <tr>
               <th className="num">#</th>
               <th>Participante</th>
-              <th className="num">Pts. jornada</th>
-              <th className="num total">Acumulado</th>
+              <th className="num" title="Puntos ganados en esta jornada">Jorn.</th>
+              <th className="num total">Acum.</th>
             </tr>
           </thead>
           <tbody>
