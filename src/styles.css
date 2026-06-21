@@ -182,7 +182,7 @@ tr.me td:first-child { box-shadow: inset 3px 0 0 var(--accent-2); }
 /* gráfico de evolución */
 .chart { margin-bottom: 18px; }
 .chart-svg-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
-.evolution { width: 100%; min-width: 460px; height: auto; display: block; }
+.evolution { width: 100%; min-width: 0; height: auto; display: block; }
 .evolution .grid { stroke: var(--line); stroke-width: 1; }
 .evolution .axis { fill: var(--muted); font-size: 11px; }
 .evolution .axis.y { text-anchor: end; }

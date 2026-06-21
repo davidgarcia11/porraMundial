@@ -109,13 +109,17 @@ export default function EvolutionChart({ scores, predictions, results }) {
             <g>
               <path d={`${smoothPath(hlPts)} L${hlPts[n - 1][0]},${baseY} L${hlPts[0][0]},${baseY} Z`} fill="url(#evoArea)" stroke="none" />
               <path d={smoothPath(hlPts)} fill="none" stroke={hlColor} strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" />
-              {[0, n - 1].map((i) => (
-                <g key={i} transform={`translate(${hlPts[i][0]},${hlPts[i][1]})`}>
-                  <rect x={-15} y={-26} width={30} height={17} rx={8} fill={hlColor} />
-                  <text x={0} y={-14} className="badge">{valsOf(hl)[i]}</text>
-                  <circle cx={0} cy={0} r={3.5} fill="#0f1216" stroke={hlColor} strokeWidth={2.5} />
-                </g>
-              ))}
+              {hlPts.map((p, i) =>
+                i >= 1 && ((i - 1) % step === 0 || i === n - 1) ? (
+                  <g key={i} transform={`translate(${p[0]},${p[1]})`}>
+                    <rect x={-14} y={-25} width={28} height={16} rx={8} fill={hlColor} />
+                    <text x={0} y={-13} className="badge">{valsOf(hl)[i]}</text>
+                    <circle cx={0} cy={0} r={3} fill="#0f1216" stroke={hlColor} strokeWidth={2.5} />
+                  </g>
+                ) : (
+                  <circle key={i} cx={p[0]} cy={p[1]} r={2.4} fill={hlColor} />
+                )
+              )}
             </g>
           )}
         </svg>
