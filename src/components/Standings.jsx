@@ -49,11 +49,13 @@ export default function Standings({ scores, me }) {
                 open === row.name ? (
                   <tr key={row.name + '-d'} className="bd-detail">
                     <td colSpan={3}>
-                      <span><b>Grupos</b> {bd.grupos}</span>
-                      <span><b>Posic.</b> {bd.posiciones}</span>
-                      <span><b>Clasif.</b> {bd.clasificados}</span>
-                      <span><b>Elim.</b> {bd.eliminatorias}</span>
-                      <span><b>Extra</b> {bd.extra}</span>
+                      <div className="bd-chips">
+                        <span><b>Grupos</b> {bd.grupos}</span>
+                        <span><b>Posic.</b> {bd.posiciones}</span>
+                        <span><b>Clasif.</b> {bd.clasificados}</span>
+                        <span><b>Elim.</b> {bd.eliminatorias}</span>
+                        <span><b>Extra</b> {bd.extra}</span>
+                      </div>
                     </td>
                   </tr>
                 ) : null,

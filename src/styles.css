@@ -102,8 +102,9 @@ tr.me td:first-child { box-shadow: inset 3px 0 0 var(--accent-2); }
 
 /* desglose desplegable (solo móvil) */
 .only-mobile { display: none; }
-.bd-detail > td { background: var(--panel-2); display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.8rem; color: var(--muted); }
-.bd-detail b { color: var(--text); font-weight: 600; margin-right: 3px; }
+.bd-detail > td { background: var(--panel-2); }
+.bd-chips { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.8rem; color: var(--muted); padding: 2px 0; }
+.bd-chips b { color: var(--text); font-weight: 600; margin-right: 3px; }
 @media (min-width: 561px) { .bd-detail { display: none; } }
 
 .me-picker { display: flex; align-items: center; gap: 8px; margin: 10px 0 18px; font-size: 0.85rem; }
