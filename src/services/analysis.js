@@ -1,7 +1,7 @@
 // Cálculos de análisis: equipos vivos, puntos en juego, comparador y estadísticas.
 import { TEAMS } from '../data/teams.js';
 import { MATCH_POINTS, HONOR_POINTS, POSITION_POINTS, QUALIFIER_POINTS } from '../scoring/config.js';
-import { scoreMatchPrediction, sign, computeScores } from '../scoring/engine.js';
+import { scoreMatchPrediction, scoreKnockoutPrediction, sign, computeScores } from '../scoring/engine.js';
 import { provisionalR32, provisionalQualifiers } from './tournamentUtils.js';
 
 const ALL_CODES = Object.keys(TEAMS);
@@ -495,6 +495,86 @@ export function currentProjection(predictions, results, scores) {
       projected: projByName[name] ?? 0,
     }))
     .sort((a, b) => b.projected - a.projected || b.current - a.current);
+}
+
+const samePairAB = (a, b) =>
+  (a.home === b.home && a.away === b.away) || (a.home === b.away && a.away === b.home);
+const STAGE_TO_ROUND = {
+  LAST_32: 'dieciseisavos', LAST_16: 'octavos', QUARTER_FINALS: 'cuartos',
+  SEMI_FINALS: 'semifinales', THIRD_PLACE: 'tercer_puesto', FINAL: 'final',
+};
+
+// Evolución de puntos ACUMULADOS por día (no por jornada), para el gráfico.
+export function dailyEvolution(predictions, results, scores) {
+  const names = predictions.participants;
+  const tmatches = results.tournament?.matches || [];
+  const dayOf = (iso) => (iso ? iso.slice(0, 10) : null);
+
+  const dateByPair = {};
+  for (const m of tmatches)
+    if (m.stage === 'GROUP_STAGE' && m.home?.code && m.away?.code && m.utcDate)
+      dateByPair[[m.home.code, m.away.code].sort().join('|')] = m.utcDate;
+
+  const dayPts = names.map(() => ({}));
+  const matchTotal = names.map(() => 0);
+  const add = (pi, day, pts) => {
+    if (!pts || !day) return;
+    dayPts[pi][day] = (dayPts[pi][day] || 0) + pts;
+    matchTotal[pi] += pts;
+  };
+
+  for (const gm of predictions.groupMatches) {
+    const actual = results.groupMatches?.[gm.id];
+    if (!hasResult(actual)) continue;
+    const day = dayOf(dateByPair[[gm.home, gm.away].sort().join('|')]);
+    if (!day) continue;
+    gm.preds.forEach((pred, pi) => add(pi, day, scoreMatchPrediction(pred, actual, MATCH_POINTS.grupos).pts));
+  }
+
+  for (const m of tmatches) {
+    const round = STAGE_TO_ROUND[m.stage];
+    if (!round || m.status !== 'FINISHED' || !m.home?.code || !m.away?.code) continue;
+    const day = dayOf(m.utcDate);
+    if (!day) continue;
+    const actual = { home: m.home.code, away: m.away.code, h: m.score.home, a: m.score.away };
+    if (!hasResult(actual)) continue;
+    const tbl = MATCH_POINTS[round];
+    const preds = predictions.knockoutMatches[round] || [];
+    for (let pi = 0; pi < names.length; pi++)
+      for (const match of preds) {
+        const p = match.preds[pi];
+        if (p && p.home && samePairAB(p, actual)) {
+          const d = scoreKnockoutPrediction(p, actual, tbl);
+          if (d) add(pi, day, d.pts);
+          break;
+        }
+      }
+  }
+
+  const groupDays = [...new Set(Object.values(dateByPair).map(dayOf).filter(Boolean))].sort();
+  const lastGroupDay = groupDays[groupDays.length - 1] || null;
+  const playedDays = new Set();
+  dayPts.forEach((o) => Object.keys(o).forEach((d) => playedDays.add(d)));
+  const sortedPlayed = [...playedDays].sort();
+  const lastOverallDay = sortedPlayed[sortedPlayed.length - 1] || lastGroupDay;
+
+  scores.participants.forEach((p, pi) => {
+    const bdGroup = (p.breakdown.groupPositions || 0) + (p.breakdown.qualifiers?.dieciseisavos || 0);
+    const bonusRest = p.total - matchTotal[pi] - bdGroup;
+    add(pi, lastGroupDay, bdGroup);
+    if (bonusRest > 0.001) add(pi, lastOverallDay, bonusRest);
+  });
+
+  const days = [...new Set([...playedDays, ...(lastGroupDay ? [lastGroupDay] : [])])].sort();
+  const series = {};
+  names.forEach((nm, pi) => {
+    let c = 0;
+    series[nm] = days.map((day) => {
+      c += dayPts[pi][day] || 0;
+      return c;
+    });
+  });
+  return { days, series, leaderName: scores.finalStandings[0]?.name || null };
 }
 
 export function computeStats(predictions, results, scores) {

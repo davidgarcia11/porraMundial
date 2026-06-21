@@ -147,7 +147,7 @@ export default function App() {
         ) : tab === 'general' ? (
           <Standings scores={scores} me={me} />
         ) : tab === 'jornada' ? (
-          <JornadaView scores={scores} me={me} />
+          <JornadaView scores={scores} me={me} predictions={predictions} results={effectiveResults} />
         ) : tab === 'detalle' ? (
           <ParticipantDetail
             predictions={predictions}

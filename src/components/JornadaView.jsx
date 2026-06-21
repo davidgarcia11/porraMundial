@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import EvolutionChart from './EvolutionChart.jsx';
 
-export default function JornadaView({ scores, me }) {
+export default function JornadaView({ scores, me, predictions, results }) {
   const { jornadas, standingsByJornada, participants } = scores;
   const pointsByName = Object.fromEntries(participants.map((p) => [p.name, p.jornada]));
 
@@ -23,7 +23,7 @@ export default function JornadaView({ scores, me }) {
       <h2>Clasificación por jornada</h2>
 
       <h3>Evolución</h3>
-      <EvolutionChart scores={scores} />
+      <EvolutionChart scores={scores} predictions={predictions} results={results} />
 
       <div className="jornada-picker">
         {jornadas.map((j) => (

@@ -1,50 +1,6 @@
 import { useMemo, useState } from 'react';
 import { PALETTE, shortName } from '../utils.js';
-
-const SHORT = {
-  g1: 'J1', g2: 'J2', g3: 'J3', r32: '16avos', r16: 'Octavos',
-  qf: 'Cuartos', sf: 'Semis', tp: '3º/4º', fin: 'Final',
-};
-
-export default function EvolutionChart({ scores }) {
-  const { jornadas, standingsByJornada, participants, finalStandings } = scores;
-
-  const colorByName = useMemo(() => {
-    const m = {};
-    participants.forEach((p, i) => (m[p.name] = PALETTE[i % PALETTE.length]));
-    return m;
-  }, [participants]);
-
-  // última jornada en la que ALGUIEN sumó puntos (delta, no acumulado)
-  let lastIdx = -1;
-  jornadas.forEach((j, i) => {
-    if (participants.some((p) => (p.jornada[j.key] || 0) > 0)) lastIdx = i;
-  });
-
-  if (lastIdx < 0) {
-    return <p className="muted small">Aún no hay datos. El gráfico aparecerá cuando se jueguen partidos.</p>;
-  }
-
-  // La evolución solo aporta con 2+ jornadas; con una sola sería igual que la general.
-  if (lastIdx < 1) {
-    return (
-      <p className="muted small">
-        La evolución se mostrará cuando se haya jugado más de una jornada (para comparar el avance
-        de cada participante). De momento, consulta la <b>Clasificación general</b>.
-      </p>
-    );
-  }
-
-  return (
-    <LineChart
-      jornadas={jornadas.slice(0, lastIdx + 1)}
-      standingsByJornada={standingsByJornada}
-      participants={participants}
-      finalStandings={finalStandings}
-      colorByName={colorByName}
-    />
-  );
-}
+import { dailyEvolution } from '../services/analysis.js';
 
 // Catmull-Rom -> curva bézier suave que pasa por todos los puntos.
 function smoothPath(pts) {
@@ -64,107 +20,123 @@ function smoothPath(pts) {
   return d.join(' ');
 }
 
-function LineChart({ jornadas: xs, standingsByJornada, participants, finalStandings, colorByName }) {
-  const leaderName = finalStandings[0]?.name ?? null;
-  const [active, setActive] = useState(leaderName);
-  const [hover, setHover] = useState(null);
-  const hl = hover ?? active;
+const fmtDay = (d) =>
+  new Date(d + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }).replace('.', '');
 
-  const valAt = useMemo(() => {
+export default function EvolutionChart({ scores, predictions, results }) {
+  const { days, series, leaderName } = useMemo(
+    () => dailyEvolution(predictions, results, scores),
+    [predictions, results, scores]
+  );
+
+  const colorByName = useMemo(() => {
     const m = {};
-    for (const j of xs) {
-      m[j.key] = {};
-      for (const row of standingsByJornada[j.key] || []) m[j.key][row.name] = row.points;
-    }
+    scores.participants.forEach((p, i) => (m[p.name] = PALETTE[i % PALETTE.length]));
     return m;
-  }, [xs, standingsByJornada]);
+  }, [scores]);
 
-  const n = xs.length;
-  const W = 720, H = 300, padL = 16, padR = 16, padT = 26, padB = 26;
+  const [active, setActive] = useState(null);
+  const [hover, setHover] = useState(null);
+  const hl = hover ?? active ?? leaderName;
+
+  if (!days.length) {
+    return <p className="muted small">La evolución aparecerá cuando se jueguen partidos.</p>;
+  }
+
+  // valores con origen en 0 (para ver la subida desde el principio)
+  const legend = scores.finalStandings.map((r) => r.name);
+  const valsOf = (name) => [0, ...(series[name] || [])];
+  const n = days.length + 1; // origen + días
+
+  const W = 720, H = 300, padL = 30, padR = 14, padT = 26, padB = 30;
   const plotW = W - padL - padR;
   const plotH = H - padT - padB;
   const baseY = padT + plotH;
 
-  let rawMax = 0;
-  for (const j of xs) for (const p of participants) rawMax = Math.max(rawMax, valAt[j.key]?.[p.name] || 0);
-  const maxY = Math.max(10, Math.ceil(rawMax / 10) * 10);
+  let maxY = 10;
+  for (const name of legend) for (const v of valsOf(name)) if (v > maxY) maxY = v;
+  maxY = Math.ceil(maxY / 10) * 10;
 
-  const x = (i) => padL + (i * plotW) / (n - 1);
+  const x = (i) => padL + (i * plotW) / (n - 1 || 1);
   const y = (v) => padT + plotH - (v / maxY) * plotH;
-  const series = (name) => xs.map((j, i) => [x(i), y(valAt[j.key]?.[name] || 0)]);
+  const pts = (name) => valsOf(name).map((v, i) => [x(i), y(v)]);
 
-  // dibuja primero las líneas de fondo y al final la resaltada (encima)
-  const others = finalStandings.map((r) => r.name).filter((nm) => nm !== hl);
   const hlColor = hl ? colorByName[hl] : null;
-  const hlPts = hl ? series(hl) : null;
+  const hlPts = hl ? pts(hl) : null;
+  const others = legend.filter((nm) => nm !== hl);
+
+  // etiquetas del eje X (subconjunto si hay muchos días)
+  const step = Math.max(1, Math.ceil(days.length / 6));
+  const gridVals = [0, 0.5, 1].map((f) => Math.round(maxY * f));
 
   return (
     <div className="chart">
       <div className="chart-svg-wrap">
-        <svg viewBox={`0 0 ${W} ${H}`} className="evolution" role="img" aria-label="Evolución de puntos por jornada">
+        <svg viewBox={`0 0 ${W} ${H}`} className="evolution" role="img" aria-label="Evolución de puntos por día">
           {hlColor && (
             <defs>
               <linearGradient id="evoArea" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={hlColor} stopOpacity="0.45" />
+                <stop offset="0%" stopColor={hlColor} stopOpacity="0.4" />
                 <stop offset="100%" stopColor={hlColor} stopOpacity="0" />
               </linearGradient>
             </defs>
           )}
-
-          {/* etiquetas de jornada */}
-          {xs.map((j, i) => (
-            <text key={j.key} x={x(i)} y={H - 8} className="axis x">{SHORT[j.key] || j.label}</text>
+          {gridVals.map((v) => (
+            <g key={v}>
+              <line x1={padL} x2={W - padR} y1={y(v)} y2={y(v)} className="grid" />
+              <text x={padL - 6} y={y(v) + 3} className="axis y">{v}</text>
+            </g>
           ))}
+          {days.map((d, i) =>
+            i % step === 0 || i === days.length - 1 ? (
+              <text key={d} x={x(i + 1)} y={H - 9} className="axis x">{fmtDay(d)}</text>
+            ) : null
+          )}
 
-          {/* líneas de fondo (resto de participantes) */}
           {others.map((name) => (
             <path
               key={name}
-              d={smoothPath(series(name))}
+              d={smoothPath(pts(name))}
               fill="none"
               stroke={colorByName[name]}
-              strokeWidth={1.5}
+              strokeWidth={1.4}
               strokeLinecap="round"
-              opacity={hl ? 0.18 : 0.7}
+              opacity={hl ? 0.16 : 0.7}
             />
           ))}
 
-          {/* participante resaltado: área + línea + badges */}
           {hl && (
             <g>
               <path d={`${smoothPath(hlPts)} L${hlPts[n - 1][0]},${baseY} L${hlPts[0][0]},${baseY} Z`} fill="url(#evoArea)" stroke="none" />
-              <path d={smoothPath(hlPts)} fill="none" stroke={hlColor} strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" />
-              {hlPts.map((p, i) => {
-                const v = valAt[xs[i].key]?.[hl] || 0;
-                return (
-                  <g key={i} transform={`translate(${p[0]},${p[1]})`}>
-                    <rect x={-15} y={-26} width={30} height={17} rx={8} fill={hlColor} />
-                    <text x={0} y={-14} className="badge">{v}</text>
-                    <circle cx={0} cy={0} r={3.5} fill="#0f1216" stroke={hlColor} strokeWidth={2.5} />
-                  </g>
-                );
-              })}
+              <path d={smoothPath(hlPts)} fill="none" stroke={hlColor} strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" />
+              {[0, n - 1].map((i) => (
+                <g key={i} transform={`translate(${hlPts[i][0]},${hlPts[i][1]})`}>
+                  <rect x={-15} y={-26} width={30} height={17} rx={8} fill={hlColor} />
+                  <text x={0} y={-14} className="badge">{valsOf(hl)[i]}</text>
+                  <circle cx={0} cy={0} r={3.5} fill="#0f1216" stroke={hlColor} strokeWidth={2.5} />
+                </g>
+              ))}
             </g>
           )}
         </svg>
       </div>
 
       <div className="legend">
-        {finalStandings.map((r) => (
+        {legend.map((name) => (
           <button
-            key={r.name}
-            className={`legend-item${hl === r.name ? ' on' : ''}`}
-            onMouseEnter={() => setHover(r.name)}
+            key={name}
+            className={`legend-item${hl === name ? ' on' : ''}`}
+            onMouseEnter={() => setHover(name)}
             onMouseLeave={() => setHover(null)}
-            onClick={() => setActive((a) => (a === r.name ? null : r.name))}
-            title={r.name}
+            onClick={() => setActive((a) => (a === name ? null : name))}
+            title={name}
           >
-            <span className="swatch" style={{ background: colorByName[r.name] }} />
-            {shortName(r.name)}
+            <span className="swatch" style={{ background: colorByName[name] }} />
+            {shortName(name)}
           </button>
         ))}
       </div>
-      <p className="muted small">Puntos acumulados por jornada. Toca un nombre para resaltar su evolución.</p>
+      <p className="muted small">Puntos acumulados por día (desde 0). Toca un nombre para resaltar su evolución.</p>
     </div>
   );
 }
