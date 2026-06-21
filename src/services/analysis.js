@@ -58,17 +58,24 @@ function maxRemaining(predictions, results, alive, pi) {
     rem += POSITION_POINTS * positions;
   }
 
-  // puntos por clasificado (por ronda, si aún no se conoce)
+  // puntos por clasificado: solo equipos que SIGUEN vivos (objetivo)
   for (const [round, value] of Object.entries(QUALIFIER_POINTS)) {
     const resolved = (results.qualified?.[round] || []).length > 0;
-    if (!resolved) rem += value * (predictions.qualifiers[round]?.length || 0);
+    if (resolved) continue;
+    const set = new Set((predictions.qualifiers[round] || []).flatMap((r) => r.preds));
+    let count = 0;
+    for (const code of set) if (alive.has(code)) count++;
+    rem += value * count;
   }
 
-  // partidos de eliminatorias no jugados
-  for (const [round, total] of Object.entries(KO_COUNTS)) {
-    const played = (results.knockoutResults?.[round] || []).length;
-    const left = total - played;
-    if (left > 0) rem += maxMatch(round) * left;
+  // partidos de eliminatorias: solo cruces cuyos dos equipos siguen vivos
+  for (const round of Object.keys(KO_COUNTS)) {
+    if ((results.knockoutResults?.[round] || []).length > 0) continue; // ronda ya en juego
+    const matches = predictions.knockoutMatches[round] || [];
+    for (const m of matches) {
+      const p = m.preds[pi];
+      if (p && p.home && alive.has(p.home) && alive.has(p.away)) rem += maxMatch(round);
+    }
   }
 
   // cuadro de honor

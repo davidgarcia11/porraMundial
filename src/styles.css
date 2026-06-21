@@ -87,6 +87,7 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .pos { color: var(--accent); font-weight: 600; }
 .vs { color: var(--muted); font-size: 0.8rem; }
 .pending td { opacity: 0.5; }
+tr.faded td { opacity: 0.5; }
 
 .podium.r1 td { background: rgba(245,197,24,0.10); }
 .podium.r2 td { background: rgba(200,208,216,0.08); }
