@@ -1,0 +1,7 @@
+{
+  "_note": "Correcciones manuales para resultados que la API tenga mal (p. ej. tras VAR). Se aplican ENCIMA de los datos de la API. Para quitar una corrección, borra su entrada. groupMatches va por id 'LOCAL-VISITANTE' (códigos de la porra).",
+  "groupMatches": {
+    "SPN-ARS": { "h": 4, "a": 0 }
+  },
+  "honors": {}
+}
