@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PointsInPlayView from './PointsInPlayView.jsx';
 import ProjectionView from './ProjectionView.jsx';
+import CrucesView from './CrucesView.jsx';
 import CompareView from './CompareView.jsx';
 import StatsView from './StatsView.jsx';
 import { useNewBadge } from '../newFeatures.js';
@@ -8,6 +9,7 @@ import { useNewBadge } from '../newFeatures.js';
 const SUBS = [
   { key: 'play', label: 'Puntos máximos' },
   { key: 'projection', label: 'Proyección' },
+  { key: 'cruces', label: 'Cruces' },
   { key: 'compare', label: 'Comparador' },
   { key: 'stats', label: 'Estadísticas' },
 ];
@@ -38,6 +40,8 @@ export default function AnalisisView({ predictions, results, scores, me }) {
         <PointsInPlayView predictions={predictions} results={results} scores={scores} me={me} />
       ) : sub === 'projection' ? (
         <ProjectionView predictions={predictions} results={results} scores={scores} me={me} />
+      ) : sub === 'cruces' ? (
+        <CrucesView predictions={predictions} results={results} me={me} />
       ) : sub === 'compare' ? (
         <CompareView predictions={predictions} results={results} scores={scores} me={me} />
       ) : (

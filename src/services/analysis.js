@@ -584,6 +584,47 @@ export function dailyEvolution(predictions, results, scores) {
   return { days, series, leaderName: scores.finalStandings[0]?.name || null };
 }
 
+// Seguimiento de cruces "habilitados": en eliminatorias solo puntúas un partido
+// si aciertas los DOS equipos. Aquí, por ronda, cuántos de los cruces reales ya
+// conocidos coinciden con los que predijo cada participante (ambos equipos).
+const CRUCE_ROUNDS = [
+  ['dieciseisavos', 'LAST_32', '16avos'],
+  ['octavos', 'LAST_16', 'Octavos'],
+  ['cuartos', 'QUARTER_FINALS', 'Cuartos'],
+  ['semifinales', 'SEMI_FINALS', 'Semis'],
+  ['tercer_puesto', 'THIRD_PLACE', '3º-4º'],
+  ['final', 'FINAL', 'Final'],
+];
+
+export function crucesTracking(predictions, results) {
+  const tmatches = results.tournament?.matches || [];
+  const names = predictions.participants;
+
+  const rounds = CRUCE_ROUNDS.map(([key, stage, label]) => {
+    const real = tmatches
+      .filter((m) => m.stage === stage && m.home?.code && m.away?.code)
+      .map((m) => ({ home: m.home.code, away: m.away.code }));
+    const preds = predictions.knockoutMatches[key] || [];
+    const perParticipant = names.map((_, pi) => {
+      let count = 0;
+      for (const rc of real) {
+        for (const match of preds) {
+          const p = match.preds[pi];
+          if (p && p.home && samePairAB(p, rc)) {
+            count++;
+            break;
+          }
+        }
+      }
+      return count;
+    });
+    return { key, label, known: real.length, perParticipant };
+  }).filter((r) => r.known > 0);
+
+  const totals = names.map((_, pi) => rounds.reduce((s, r) => s + r.perParticipant[pi], 0));
+  return { names, rounds, totals };
+}
+
 export function computeStats(predictions, results, scores) {
   const n = predictions.participants.length;
   const exact = new Array(n).fill(0);

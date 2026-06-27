@@ -16,6 +16,7 @@ export const NEW_SINCE = {
   'analisis:compare': '2026-06-19',
   'analisis:stats': '2026-06-19',
   'analisis:projection': '2026-06-19',
+  'analisis:cruces': '2026-06-21',
 };
 
 const FOUR_DAYS = 4 * 24 * 60 * 60 * 1000;
