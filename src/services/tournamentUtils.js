@@ -90,6 +90,74 @@ export function provisionalR32(groups) {
   }));
 }
 
+// Orden de árbol de los 16 dieciseisavos (posición de arriba a abajo -> índice de R32_SLOTS).
+const LEAF_ORDER = [0, 2, 1, 4, 10, 11, 8, 9, 3, 5, 6, 7, 13, 15, 12, 14];
+const STAGE = { LAST_32: 'LAST_32', LAST_16: 'LAST_16', QUARTER_FINALS: 'QUARTER_FINALS', SEMI_FINALS: 'SEMI_FINALS', FINAL: 'FINAL' };
+
+// Construye las 5 rondas del cuadro (en orden de árbol) combinando el cuadro
+// provisional (según clasificación de grupos) con los cruces REALES de la API,
+// colocando cada partido real en su posición correcta. Devuelve arrays con
+// { a:{code,label,score,win}, b:{...} } o null.
+export function buildBracketRounds(tournament) {
+  const groups = tournament?.groups || {};
+  const matches = tournament?.matches || [];
+  const stage = (st) => matches.filter((m) => m.stage === st && m.home?.code && m.away?.code);
+  const sideOf = (m, home) => ({
+    code: home ? m.home.code : m.away.code,
+    score: (home ? m.score?.home : m.score?.away) ?? null,
+    win: m.winner === (home ? 'HOME_TEAM' : 'AWAY_TEAM'),
+  });
+
+  const prov = provisionalR32(groups); // por índice de slot, o null
+  // Dieciseisavos en orden de árbol (provisional)
+  let r32 = LEAF_ORDER.map((slotIdx) => {
+    const m = prov ? prov[slotIdx] : null;
+    return m ? { a: { code: m.a.code, label: m.a.label }, b: { code: m.b.code, label: m.b.label } } : null;
+  });
+
+  // semillas fijas (1º/2º, exactas al cerrar grupos) -> posición en el árbol
+  const seedToPos = {};
+  r32.forEach((m, p) => {
+    if (!m) return;
+    for (const s of [m.a, m.b]) if (s.code && /^[12]º/.test(s.label || '')) seedToPos[s.code] = p;
+  });
+
+  const realR32 = stage(STAGE.LAST_32);
+  if (realR32.length) {
+    if (!prov) r32 = Array(16).fill(null);
+    realR32.forEach((rm, i) => {
+      let p = seedToPos[rm.home.code];
+      if (p == null) p = seedToPos[rm.away.code];
+      if (p == null) p = prov ? null : i; // sin grupos: orden de la API
+      if (p == null) return;
+      r32[p] = { a: sideOf(rm, true), b: sideOf(rm, false) };
+    });
+  }
+
+  const posOf = (arr, code) => {
+    for (let i = 0; i < arr.length; i++) {
+      const m = arr[i];
+      if (m && ((m.a && m.a.code === code) || (m.b && m.b.code === code))) return i;
+    }
+    return null;
+  };
+  const placeRound = (prev, st, size) => {
+    const arr = Array(size).fill(null);
+    for (const rm of stage(st)) {
+      const pa = posOf(prev, rm.home.code);
+      const pb = posOf(prev, rm.away.code);
+      const q = pa != null ? Math.floor(pa / 2) : pb != null ? Math.floor(pb / 2) : null;
+      if (q != null && q < size) arr[q] = { a: sideOf(rm, true), b: sideOf(rm, false) };
+    }
+    return arr;
+  };
+  const r16 = placeRound(r32, STAGE.LAST_16, 8);
+  const qf = placeRound(r16, STAGE.QUARTER_FINALS, 4);
+  const sf = placeRound(qf, STAGE.SEMI_FINALS, 2);
+  const fin = placeRound(sf, STAGE.FINAL, 1);
+  return [r32, r16, qf, sf, fin];
+}
+
 // Quién pasaría AHORA a dieciseisavos: 1º y 2º de cada grupo + 8 mejores terceros.
 export function provisionalQualifiers(groups) {
   const letters = Object.keys(groups || {}).sort();

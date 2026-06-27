@@ -16,9 +16,10 @@ function Side({ side }) {
   if (!side) return <div className="cb-side"><span className="cb-cand">Por determinar</span></div>;
   if (side.code) {
     return (
-      <div className="cb-side">
+      <div className={`cb-side${side.win ? ' win' : ''}`}>
         <Team code={side.code} />
         {side.label && <span className="cb-pos">{side.label}</span>}
+        {side.score != null && <span className="cb-score">{side.score}</span>}
       </div>
     );
   }

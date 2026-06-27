@@ -1,84 +1,41 @@
 import Team from './Team.jsx';
 import ConnectedBracket from './ConnectedBracket.jsx';
-import { provisionalR32 } from '../services/tournamentUtils.js';
+import { buildBracketRounds } from '../services/tournamentUtils.js';
 
-const STAGES = [
-  ['LAST_32', 'Dieciseisavos'],
-  ['LAST_16', 'Octavos'],
-  ['QUARTER_FINALS', 'Cuartos'],
-  ['SEMI_FINALS', 'Semifinales'],
-  ['THIRD_PLACE', '3º y 4º'],
-  ['FINAL', 'Final'],
-];
+// Cuadro de eliminatorias: árbol conectado que muestra cada cruce (quién vs
+// quién). Se va rellenando con la clasificación de grupos y, cuando la API tiene
+// los cruces reales, los coloca en su sitio.
+export default function BracketView({ tournament }) {
+  const rounds = buildBracketRounds(tournament);
+  if (!rounds[0].some(Boolean)) {
+    return <p className="muted small">El cuadro aparecerá cuando empiecen a jugarse los grupos.</p>;
+  }
 
-// Orden de árbol de los 16 dieciseisavos (derivado de la estructura W73-W75…).
-const LEAF_ORDER = [0, 2, 1, 4, 10, 11, 8, 9, 3, 5, 6, 7, 13, 15, 12, 14];
+  const matches = tournament?.matches || [];
+  const anyReal = matches.some((m) => m.stage !== 'GROUP_STAGE' && (m.home?.code || m.away?.code));
+  const tp = matches.find((m) => m.stage === 'THIRD_PLACE' && m.home?.code && m.away?.code);
+  const played = (m) => m && m.score?.home != null && m.score?.away != null;
 
-function Side({ team, score, winner }) {
   return (
-    <div className={`bk-team${winner ? ' win' : ''}`}>
-      <span className="bk-name">{team?.code ? <Team code={team.code} /> : <span className="tbd">Por determinar</span>}</span>
-      <span className="bk-score">{score ?? ''}</span>
+    <div>
+      <p className="muted small">
+        {anyReal ? (
+          <>Cuadro con los <b>cruces reales</b>; las rondas por jugar se completan según avanza el torneo.</>
+        ) : (
+          <>
+            Cuadro <b>provisional</b>: se va rellenando con la clasificación de los grupos. En los cruces
+            aún sin equipo se indica qué los alimenta (<i>1º E</i>, <i>3º (A/B/C/D/F)</i>). Los cruces
+            reales aparecerán al cerrarse los grupos.
+          </>
+        )}
+      </p>
+      <ConnectedBracket rounds={rounds} />
+      {tp && (
+        <p className="muted small third-place">
+          <b>3º y 4º puesto:</b> <Team code={tp.home.code} />{' '}
+          {played(tp) ? `${tp.score.home}-${tp.score.away}` : 'vs'} <Team code={tp.away.code} />
+        </p>
+      )}
     </div>
   );
-}
-
-export default function BracketView({ tournament }) {
-  const matches = tournament?.matches || [];
-  const knockout = matches.filter((m) => m.stage !== 'GROUP_STAGE');
-  const hasRealKnockout = knockout.some((m) => m.home?.code || m.away?.code);
-  const groups = tournament?.groups || {};
-
-  // 1) La API ya tiene cruces reales -> vista por rondas con los equipos reales.
-  if (hasRealKnockout) {
-    return (
-      <div>
-        <div className="bracket">
-          {STAGES.map(([stage, label]) => {
-            const ms = knockout.filter((m) => m.stage === stage);
-            if (!ms.length) return null;
-            return (
-              <div key={stage} className="bracket-col">
-                <h4 className="bracket-h">{label}</h4>
-                {ms.map((m) => {
-                  const played = m.score.home != null && m.score.away != null;
-                  return (
-                    <div key={m.id} className="bracket-match">
-                      <Side team={m.home} score={played ? m.score.home : null} winner={m.winner === 'HOME_TEAM'} />
-                      <Side team={m.away} score={played ? m.score.away : null} winner={m.winner === 'AWAY_TEAM'} />
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
-        <p className="muted small">Desliza horizontalmente para ver todas las rondas.</p>
-      </div>
-    );
-  }
-
-  // 2) Cuadro provisional que se va rellenando solo según la clasificación de grupos.
-  const provR32 = provisionalR32(groups);
-  if (provR32) {
-    const rounds = [
-      LEAF_ORDER.map((i) => provR32[i]),
-      Array.from({ length: 8 }, () => null),
-      Array.from({ length: 4 }, () => null),
-      Array.from({ length: 2 }, () => null),
-      Array.from({ length: 1 }, () => null),
-    ];
-    return (
-      <div>
-        <p className="muted small">
-          Cuadro <b>provisional</b>: se va rellenando según la clasificación de los grupos. En los
-          cruces que aún no tienen equipo se indica qué lo alimenta (p. ej. <i>1º E</i> o
-          <i> 3º (A/B/C/D/F)</i>). Los cruces reales aparecerán cuando la organización los publique.
-        </p>
-        <ConnectedBracket rounds={rounds} />
-      </div>
-    );
-  }
-
-  return <p className="muted small">El cuadro aparecerá cuando empiecen a jugarse los grupos.</p>;
 }
