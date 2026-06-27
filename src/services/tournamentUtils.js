@@ -40,7 +40,7 @@ const posCode = (groups, pos, letter) => {
 // válido (cada hueco solo admite terceros de ciertos grupos). Puede no coincidir
 // al 100% con la asignación oficial de la FIFA, pero es un cruce válido.
 export function provisionalR32(groups) {
-  if (Object.keys(groups || {}).length < 12) return null; // hacen falta los 12 grupos
+  if (!Object.keys(groups || {}).length) return null; // sin grupos no se puede
   const thirds = rankThirds(groups).slice(0, 8);
   const thirdCodeByGroup = {};
   thirds.forEach((t) => (thirdCodeByGroup[t.group] = t.code));
@@ -76,7 +76,8 @@ export function provisionalR32(groups) {
   const resolveSide = (side, idx, sidx) => {
     if (side.startsWith('3:')) {
       const g = thirdAssign[`${idx}.${sidx}`];
-      return { code: g ? thirdCodeByGroup[g] : null, label: g ? `3º ${g}` : '3º' };
+      const cands = side.slice(2).split('').join('/');
+      return { code: g ? thirdCodeByGroup[g] : null, label: g ? `3º ${g}` : `3º (${cands})` };
     }
     const pos = Number(side[0]);
     const letter = side[1];

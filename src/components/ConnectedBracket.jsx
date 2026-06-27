@@ -13,15 +13,17 @@ const COL_GAP = 44;
 const COL_W = BOX_W + COL_GAP;
 
 function Side({ side }) {
-  if (!side || (!side.code && !side.label)) {
-    return <div className="cb-side"><span className="tbd">—</span></div>;
+  if (!side) return <div className="cb-side"><span className="cb-cand">Por determinar</span></div>;
+  if (side.code) {
+    return (
+      <div className="cb-side">
+        <Team code={side.code} />
+        {side.label && <span className="cb-pos">{side.label}</span>}
+      </div>
+    );
   }
-  return (
-    <div className="cb-side">
-      {side.code ? <Team code={side.code} /> : <span className="tbd">Por determinar</span>}
-      {side.label && <span className="cb-pos">{side.label}</span>}
-    </div>
-  );
+  // sin equipo aún: muestra qué lo alimenta (1º A, 3º (A/B/C/D/F)…)
+  return <div className="cb-side"><span className="cb-cand">{side.label || 'Por determinar'}</span></div>;
 }
 
 export default function ConnectedBracket({ rounds }) {

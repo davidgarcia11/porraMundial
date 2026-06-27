@@ -1,6 +1,6 @@
 import Team from './Team.jsx';
 import ConnectedBracket from './ConnectedBracket.jsx';
-import { provisionalR32, provisionalQualifiers } from '../services/tournamentUtils.js';
+import { provisionalR32 } from '../services/tournamentUtils.js';
 
 const STAGES = [
   ['LAST_32', 'Dieciseisavos'],
@@ -23,27 +23,9 @@ function Side({ team, score, winner }) {
   );
 }
 
-function QualCol({ title, items, highlight }) {
-  return (
-    <div className={`qual-col${highlight ? ' hl' : ''}`}>
-      <h5>{title}</h5>
-      <ul>
-        {items.map((t) => (
-          <li key={(t.group || '') + (t.code || t.name)}>
-            <span className="qg">{t.group}</span>
-            {t.code ? <Team code={t.code} /> : <span className="tbd">{t.name}</span>}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 export default function BracketView({ tournament }) {
   const matches = tournament?.matches || [];
   const knockout = matches.filter((m) => m.stage !== 'GROUP_STAGE');
-  const groupMatches = matches.filter((m) => m.stage === 'GROUP_STAGE');
-  const groupStageComplete = groupMatches.length > 0 && groupMatches.every((m) => m.status === 'FINISHED');
   const hasRealKnockout = knockout.some((m) => m.home?.code || m.away?.code);
   const groups = tournament?.groups || {};
 
@@ -76,8 +58,8 @@ export default function BracketView({ tournament }) {
     );
   }
 
-  // 2) Fase de grupos TERMINADA -> cuadro provisional completo (árbol).
-  const provR32 = groupStageComplete ? provisionalR32(groups) : null;
+  // 2) Cuadro provisional que se va rellenando solo según la clasificación de grupos.
+  const provR32 = provisionalR32(groups);
   if (provR32) {
     const rounds = [
       LEAF_ORDER.map((i) => provR32[i]),
@@ -89,32 +71,14 @@ export default function BracketView({ tournament }) {
     return (
       <div>
         <p className="muted small">
-          Cuadro <b>provisional</b> según la clasificación final de grupos. Los cruces reales se
-          confirmarán en cuanto la organización los publique.
+          Cuadro <b>provisional</b>: se va rellenando según la clasificación de los grupos. En los
+          cruces que aún no tienen equipo se indica qué lo alimenta (p. ej. <i>1º E</i> o
+          <i> 3º (A/B/C/D/F)</i>). Los cruces reales aparecerán cuando la organización los publique.
         </p>
         <ConnectedBracket rounds={rounds} />
       </div>
     );
   }
 
-  // 3) Grupos en juego -> clasificados provisionales (el cuadro aún no tiene sentido).
-  if (Object.keys(groups).length) {
-    const q = provisionalQualifiers(groups);
-    return (
-      <div className="prov-qual">
-        <h4>Clasificados a dieciseisavos (provisional)</h4>
-        <div className="qual-cols">
-          <QualCol title="Primeros" items={q.firsts} />
-          <QualCol title="Segundos" items={q.seconds} />
-          <QualCol title="Mejores terceros" items={q.thirds} highlight />
-        </div>
-        <p className="muted small">
-          Según la clasificación actual. El <b>cuadro</b> se dibujará cuando termine la fase de grupos
-          (cuando el orden de cada grupo esté cerrado).
-        </p>
-      </div>
-    );
-  }
-
-  return <p className="muted small">El cuadro aparecerá cuando avance el torneo.</p>;
+  return <p className="muted small">El cuadro aparecerá cuando empiecen a jugarse los grupos.</p>;
 }
