@@ -97,6 +97,8 @@ export async function buildResults({
   const roundTeams = {};
   let groupTotal = 0;
   let groupFinished = 0;
+  const grpTotal = {}; // partidos por grupo de la porra
+  const grpFinished = {}; // partidos finalizados por grupo
 
   // Vista Mundial: todos los partidos normalizados.
   const allMatches = [];
@@ -121,6 +123,11 @@ export async function buildResults({
     if (m.stage === 'GROUP_STAGE') {
       groupTotal++;
       if (isFinished(m)) groupFinished++;
+      const gLetter = TEAMS[homeCode]?.group || TEAMS[awayCode]?.group;
+      if (gLetter) {
+        grpTotal[gLetter] = (grpTotal[gLetter] || 0) + 1;
+        if (isFinished(m)) grpFinished[gLetter] = (grpFinished[gLetter] || 0) + 1;
+      }
       if (!isFinished(m) || homeCode == null || awayCode == null) continue;
       const f = ft(m);
       const gm = groupIndex.get([homeCode, awayCode].sort().join('|'));
@@ -157,9 +164,10 @@ export async function buildResults({
   results.qualified.tercer_cuarto = [...(roundTeams['tercer_puesto'] || [])];
 
   // ---- standings: tablas de grupo (siempre, para la vista Mundial) ----
-  // La "posición exacta" de la porra solo se contabiliza con la fase de grupos
-  // terminada; las tablas en vivo se exponen igualmente en results.tournament.
-  const groupStageComplete = groupTotal > 0 && groupFinished === groupTotal;
+  // La "posición exacta" de la porra se contabiliza GRUPO A GRUPO: en cuanto un
+  // grupo termina todos sus partidos, su orden es definitivo y se fija (no
+  // depende de que el resto de grupos hayan acabado, así no parpadea).
+  const groupComplete = (letter) => grpTotal[letter] > 0 && grpFinished[letter] === grpTotal[letter];
   const tournamentGroups = {};
   const porraStandings = {};
   try {
@@ -204,7 +212,10 @@ export async function buildResults({
   } catch {
     // standings opcionales; si falla, la vista de grupos quedará vacía
   }
-  if (groupStageComplete) results.groupStandings = porraStandings;
+  // solo cuentan las posiciones de los grupos YA terminados
+  for (const [letter, codes] of Object.entries(porraStandings)) {
+    if (groupComplete(letter)) results.groupStandings[letter] = codes;
+  }
 
   // ---- goleadores (para la estimación de probabilidad y la vista de goleadores) ----
   let scorers = [];
