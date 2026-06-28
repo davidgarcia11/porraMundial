@@ -330,4 +330,31 @@ table.grp .pts { font-weight: 700; color: var(--accent); }
   .standings .bd { display: none; }
   .only-mobile { display: inline; }
   .standings tbody tr { cursor: pointer; }
+  .dsg-name { max-width: 28vw; }
+  .dsg-row { grid-template-columns: 18px minmax(60px, 30%) 1fr auto; gap: 7px; }
 }
+
+/* Desglose: barras apiladas de dónde saca los puntos cada participante */
+.dsg-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 4px 0 14px; font-size: 0.8rem; color: var(--muted); }
+.dsg-leg { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.dsg-dot { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+.dsg-list { display: flex; flex-direction: column; gap: 7px; }
+.dsg-row {
+  display: grid; grid-template-columns: 20px minmax(90px, 22%) 1fr auto;
+  align-items: center; gap: 10px; padding: 3px 0;
+}
+.dsg-rank { color: var(--muted); font-size: 0.78rem; text-align: right; font-variant-numeric: tabular-nums; }
+.dsg-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9rem; }
+.dsg-track {
+  display: flex; height: 20px; border-radius: 5px; overflow: hidden;
+  background: var(--panel-2); min-width: 4px;
+}
+.dsg-seg {
+  height: 100%; display: flex; align-items: center; justify-content: center;
+  font-size: 0.68rem; font-weight: 700; color: rgba(0,0,0,0.72);
+  overflow: hidden; transition: filter 0.12s;
+}
+.dsg-seg:hover { filter: brightness(1.12); }
+.dsg-total { font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; min-width: 28px; text-align: right; }
+.dsg-row.me .dsg-name { color: var(--accent-2); font-weight: 700; }
+.dsg-row.me .dsg-track { box-shadow: 0 0 0 1px var(--accent-2); }

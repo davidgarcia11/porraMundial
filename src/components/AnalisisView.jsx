@@ -4,9 +4,11 @@ import ProjectionView from './ProjectionView.jsx';
 import CrucesView from './CrucesView.jsx';
 import CompareView from './CompareView.jsx';
 import StatsView from './StatsView.jsx';
+import DesgloseView from './DesgloseView.jsx';
 import { useNewBadge } from '../newFeatures.js';
 
 const SUBS = [
+  { key: 'desglose', label: 'Desglose' },
   { key: 'play', label: 'Puntos máximos' },
   { key: 'projection', label: 'Proyección' },
   { key: 'cruces', label: 'Cruces' },
@@ -17,7 +19,7 @@ const SUBS = [
 export default function AnalisisView({ predictions, results, scores, me }) {
   const [sub, setSub] = useState(() => {
     const saved = localStorage.getItem('porra-sub-analisis');
-    return SUBS.some((s) => s.key === saved) ? saved : 'play';
+    return SUBS.some((s) => s.key === saved) ? saved : 'desglose';
   });
   const { isNew, markSeen } = useNewBadge();
   const open = (key) => {
@@ -36,7 +38,9 @@ export default function AnalisisView({ predictions, results, scores, me }) {
           </button>
         ))}
       </div>
-      {sub === 'play' ? (
+      {sub === 'desglose' ? (
+        <DesgloseView scores={scores} me={me} />
+      ) : sub === 'play' ? (
         <PointsInPlayView predictions={predictions} results={results} scores={scores} me={me} />
       ) : sub === 'projection' ? (
         <ProjectionView predictions={predictions} results={results} scores={scores} me={me} />
