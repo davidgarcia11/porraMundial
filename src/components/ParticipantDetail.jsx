@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
 import { scoreMatchPrediction, scoreKnockoutPrediction } from '../scoring/engine.js';
-import { MATCH_POINTS } from '../scoring/config.js';
+import { MATCH_POINTS, POSITION_POINTS, QUALIFIER_POINTS } from '../scoring/config.js';
 import { teamName, teamFlag } from '../data/teams.js';
 import { breakdownTotals } from '../utils.js';
 import Matchup from './Matchup.jsx';
+
+const QUAL_ROWS = [
+  ['dieciseisavos', 'Dieciseisavos'],
+  ['octavos', 'Octavos'],
+  ['cuartos', 'Cuartos'],
+  ['semifinales', 'Semifinales'],
+  ['tercer_cuarto', '3º y 4º puesto'],
+  ['final', 'Final'],
+];
 
 const KNOCKOUT_LABELS = {
   dieciseisavos: 'Dieciseisavos',
@@ -96,6 +105,92 @@ export default function ParticipantDetail({ predictions, results, scores, me }) 
           </tbody>
         </table>
       </div>
+
+      {Object.keys(results.groupStandings || {}).length > 0 && (
+        <div>
+          <h3>Posiciones de grupo</h3>
+          <div className="table-wrap">
+            <table className="matches">
+              <thead>
+                <tr>
+                  <th>Grupo</th>
+                  <th>1º</th>
+                  <th>2º</th>
+                  <th>3º</th>
+                  <th>4º</th>
+                  <th className="num">Pts</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.keys(predictions.groupPositions).sort().map((g) => {
+                  const actual = results.groupStandings?.[g];
+                  if (!actual) return null;
+                  let pts = 0;
+                  const cells = [1, 2, 3, 4].map((pos) => {
+                    const code = predictions.groupPositions[g].find((r) => r.pos === pos)?.preds[pi];
+                    const ok = code && actual[pos - 1] === code;
+                    if (ok) pts += POSITION_POINTS;
+                    return { code, ok };
+                  });
+                  return (
+                    <tr key={g}>
+                      <td><b>{g}</b></td>
+                      {cells.map((c, i) => (
+                        <td key={i} className={c.ok ? 'pos' : ''}>
+                          {c.code ? `${teamFlag(c.code)} ${c.code}` : '—'}
+                        </td>
+                      ))}
+                      <td className="num total">{pts}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="muted small">2 puntos por cada equipo en su posición final exacta (en verde).</p>
+        </div>
+      )}
+
+      {Object.values(results.qualified || {}).some((a) => a?.length) && (
+        <div>
+          <h3>Clasificados</h3>
+          <div className="table-wrap">
+            <table className="matches">
+              <thead>
+                <tr>
+                  <th>Ronda</th>
+                  <th>Equipos acertados</th>
+                  <th className="num">Pts</th>
+                </tr>
+              </thead>
+              <tbody>
+                {QUAL_ROWS.map(([round, label]) => {
+                  const actual = new Set(results.qualified?.[round] || []);
+                  if (!actual.size) return null;
+                  const predSet = new Set((predictions.qualifiers[round] || []).map((r) => r.preds[pi]));
+                  const hits = [...predSet].filter((c) => actual.has(c));
+                  return (
+                    <tr key={round}>
+                      <td>{label}</td>
+                      <td>
+                        {hits.length ? (
+                          hits.map((c) => (
+                            <span key={c} className="qchip">{teamFlag(c)} {c}</span>
+                          ))
+                        ) : (
+                          <span className="muted">—</span>
+                        )}
+                      </td>
+                      <td className="num total">{hits.length * QUALIFIER_POINTS[round]}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="muted small">Puntos por cada equipo que aciertas que llega a esa ronda.</p>
+        </div>
+      )}
 
       {Object.entries(predictions.knockoutMatches).map(([round, matches]) => {
         const actuals = results.knockoutResults?.[round] || [];

@@ -85,6 +85,7 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .matches td { vertical-align: middle; line-height: 1.5; }
 .matches th:not(:first-child), .matches td:not(:first-child) { white-space: nowrap; }
 .pos { color: var(--accent); font-weight: 600; }
+.qchip { display: inline-block; margin: 0 8px 3px 0; font-size: 0.82rem; white-space: nowrap; }
 .vs { color: var(--muted); font-size: 0.8rem; }
 .pending td { opacity: 0.5; }
 tr.faded td { opacity: 0.5; }
