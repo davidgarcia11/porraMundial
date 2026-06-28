@@ -23,6 +23,15 @@ const ROUND_TO_QUALIFIER = {
   semifinales: 'semifinales',
   final: 'final',
 };
+// El ganador de una ronda "se clasifica" para la siguiente. Lo derivamos del
+// resultado del partido (que la API da al instante) para no depender de que la
+// API rellene el cruce de la ronda siguiente, que suele tardar.
+const NEXT_ROUND = {
+  dieciseisavos: 'octavos',
+  octavos: 'cuartos',
+  cuartos: 'semifinales',
+  semifinales: 'final',
+};
 
 const norm = (s) =>
   (s ?? '').toString().trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -156,6 +165,13 @@ export async function buildResults({
     if (isFinished(m) && homeCode != null && awayCode != null) {
       const f = ft(m);
       results.knockoutResults[round].push({ home: homeCode, away: awayCode, h: f.home, a: f.away });
+      // el ganador queda clasificado para la ronda siguiente (sin esperar a que
+      // la API rellene ese cruce)
+      const next = NEXT_ROUND[round];
+      if (next) {
+        const winnerCode = m.score?.winner === 'AWAY_TEAM' ? awayCode : homeCode;
+        if (winnerCode) (roundTeams[next] ||= new Set()).add(winnerCode);
+      }
       if (m.stage === 'FINAL') {
         const w = m.score?.winner;
         results.honors.campeon = w === 'AWAY_TEAM' ? awayCode : homeCode;
