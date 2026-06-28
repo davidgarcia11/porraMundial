@@ -99,6 +99,7 @@ export async function buildResults({
   let groupFinished = 0;
   const grpTotal = {}; // partidos por grupo de la porra
   const grpFinished = {}; // partidos finalizados por grupo
+  const groupStats = {}; // estadísticas por grupo para calcular el orden si falla /standings
 
   // Vista Mundial: todos los partidos normalizados.
   const allMatches = [];
@@ -130,6 +131,17 @@ export async function buildResults({
       }
       if (!isFinished(m) || homeCode == null || awayCode == null) continue;
       const f = ft(m);
+      // estadísticas del grupo (para calcular el orden si /standings falla)
+      if (gLetter && Number.isFinite(f.home) && Number.isFinite(f.away)) {
+        const s = (groupStats[gLetter] ||= {});
+        const upd = (code, gf, ga) => {
+          const t = (s[code] ||= { code, points: 0, gf: 0, ga: 0, gd: 0 });
+          t.gf += gf; t.ga += ga; t.gd = t.gf - t.ga;
+          if (gf > ga) t.points += 3; else if (gf === ga) t.points += 1;
+        };
+        upd(homeCode, f.home, f.away);
+        upd(awayCode, f.away, f.home);
+      }
       const gm = groupIndex.get([homeCode, awayCode].sort().join('|'));
       if (!gm) continue;
       const oriented = gm.home === homeCode ? { h: f.home, a: f.away } : { h: f.away, a: f.home };
@@ -212,9 +224,17 @@ export async function buildResults({
   } catch {
     // standings opcionales; si falla, la vista de grupos quedará vacía
   }
-  // solo cuentan las posiciones de los grupos YA terminados
-  for (const [letter, codes] of Object.entries(porraStandings)) {
-    if (groupComplete(letter)) results.groupStandings[letter] = codes;
+  // orden de cada grupo calculado desde los partidos (respaldo si /standings falla)
+  const computedOrder = (letter) =>
+    Object.values(groupStats[letter] || {})
+      .sort((a, b) => b.points - a.points || b.gd - a.gd || b.gf - a.gf || a.code.localeCompare(b.code))
+      .map((t) => t.code);
+
+  // solo cuentan las posiciones de los grupos YA terminados; oficial o calculado
+  for (const letter of Object.keys(grpTotal)) {
+    if (!groupComplete(letter)) continue;
+    const order = porraStandings[letter] || computedOrder(letter);
+    if (order.length >= 2) results.groupStandings[letter] = order;
   }
 
   // ---- goleadores (para la estimación de probabilidad y la vista de goleadores) ----
