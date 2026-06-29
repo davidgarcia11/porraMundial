@@ -154,41 +154,34 @@ export default function ParticipantDetail({ predictions, results, scores, me }) 
       {Object.values(results.qualified || {}).some((a) => a?.length) && (
         <div>
           <h3>Clasificados</h3>
-          <div className="table-wrap">
-            <table className="matches">
-              <thead>
-                <tr>
-                  <th>Ronda</th>
-                  <th>Equipos acertados</th>
-                  <th className="num">Pts</th>
-                </tr>
-              </thead>
-              <tbody>
-                {QUAL_ROWS.map(([round, label]) => {
-                  const actual = new Set(results.qualified?.[round] || []);
-                  if (!actual.size) return null;
-                  const predSet = new Set((predictions.qualifiers[round] || []).map((r) => r.preds[pi]));
-                  const hits = [...predSet].filter((c) => actual.has(c));
-                  return (
-                    <tr key={round}>
-                      <td>{label}</td>
-                      <td>
-                        {hits.length ? (
-                          hits.map((c) => (
-                            <span key={c} className="qchip">{teamFlag(c)} {c}</span>
-                          ))
-                        ) : (
-                          <span className="muted">—</span>
-                        )}
-                      </td>
-                      <td className="num total">{hits.length * QUALIFIER_POINTS[round]}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="qual-list">
+            {QUAL_ROWS.map(([round, label]) => {
+              const actual = new Set(results.qualified?.[round] || []);
+              if (!actual.size) return null;
+              const predSet = new Set((predictions.qualifiers[round] || []).map((r) => r.preds[pi]));
+              const hits = [...predSet].filter((c) => actual.has(c));
+              const pts = hits.length * QUALIFIER_POINTS[round];
+              return (
+                <div className="qual-row" key={round}>
+                  <div className="qual-round">{label}</div>
+                  <div className="qual-teams">
+                    {hits.length ? (
+                      hits.map((c) => (
+                        <span key={c} className="qchip">{teamFlag(c)} {c}</span>
+                      ))
+                    ) : (
+                      <span className="muted">—</span>
+                    )}
+                  </div>
+                  <div className={`qual-pts ${pts ? 'total' : ''}`}>{pts}</div>
+                </div>
+              );
+            })}
           </div>
-          <p className="muted small">Puntos por cada equipo que aciertas que llega a esa ronda.</p>
+          <p className="muted small">
+            Puntos por cada equipo que aciertas que llega a esa ronda
+            ({QUALIFIER_POINTS.dieciseisavos} en dieciseisavos, {QUALIFIER_POINTS.octavos} en octavos…).
+          </p>
         </div>
       )}
 
