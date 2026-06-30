@@ -134,28 +134,80 @@ export function buildBracketRounds(tournament) {
     });
   }
 
-  const posOf = (arr, code) => {
-    for (let i = 0; i < arr.length; i++) {
-      const m = arr[i];
-      if (m && ((m.a && m.a.code === code) || (m.b && m.b.code === code))) return i;
-    }
-    return null;
+  // Construimos el árbol por niveles emparejando con los cruces REALES: los dos
+  // equipos de un cruce real definen qué dos cruces de la ronda anterior son
+  // hermanos (cuelgan del mismo). Así la topología sale del dato real y no de
+  // un orden fijo que puede no coincidir. Si no hay cruce real, se mantiene el
+  // emparejamiento provisional (cruces contiguos). Al final se recorre el árbol
+  // de arriba abajo para que las conexiones sean siempre coherentes.
+  const codesOf = (box) => {
+    const s = new Set();
+    if (box?.a?.code) s.add(box.a.code);
+    if (box?.b?.code) s.add(box.b.code);
+    return s;
   };
-  const placeRound = (prev, st, size) => {
-    const arr = Array(size).fill(null);
-    for (const rm of stage(st)) {
-      const pa = posOf(prev, rm.home.code);
-      const pb = posOf(prev, rm.away.code);
-      const q = pa != null ? Math.floor(pa / 2) : pb != null ? Math.floor(pb / 2) : null;
-      if (q != null && q < size) arr[q] = { a: sideOf(rm, true), b: sideOf(rm, false) };
+
+  let level = r32.map((box) => ({ box, codes: codesOf(box), children: null }));
+  const built = [level];
+  for (const st of [STAGE.LAST_16, STAGE.QUARTER_FINALS, STAGE.SEMI_FINALS, STAGE.FINAL]) {
+    level = pairLevel(level, stage(st), sideOf);
+    built.push(level);
+  }
+
+  // expandir de arriba (final) hacia abajo: cada padre k -> hijos 2k, 2k+1
+  const ordered = new Array(built.length);
+  ordered[built.length - 1] = built[built.length - 1];
+  for (let r = built.length - 1; r > 0; r--) {
+    const kids = [];
+    for (const p of ordered[r]) {
+      if (p.children) kids.push(p.children[0], p.children[1]);
     }
-    return arr;
+    ordered[r - 1] = kids;
+  }
+  return ordered.map((lvl) => lvl.map((n) => n.box));
+}
+
+// Empareja los nodos de una ronda en padres. Usa los cruces reales `realMs`
+// para decidir qué nodos son hermanos (siguiendo los equipos); el resto se
+// empareja en su orden actual. Devuelve los nodos padre, cada uno con
+// `children: [hijoA, hijoB]` para poder reconstruir el árbol coherente.
+function pairLevel(prev, realMs, sideOf) {
+  const n = prev.length;
+  const consumed = new Array(n).fill(false);
+  const findIdx = (code) => {
+    if (!code) return -1;
+    for (let i = 0; i < n; i++) if (!consumed[i] && prev[i].codes.has(code)) return i;
+    return -1;
   };
-  const r16 = placeRound(r32, STAGE.LAST_16, 8);
-  const qf = placeRound(r16, STAGE.QUARTER_FINALS, 4);
-  const sf = placeRound(qf, STAGE.SEMI_FINALS, 2);
-  const fin = placeRound(sf, STAGE.FINAL, 1);
-  return [r32, r16, qf, sf, fin];
+
+  const pairs = []; // { minIdx, children:[a,b], box }
+  for (const rm of realMs) {
+    const ia = findIdx(rm.home.code);
+    const ib = findIdx(rm.away.code);
+    if (ia < 0 || ib < 0 || ia === ib) continue;
+    consumed[ia] = consumed[ib] = true;
+    const [lo, hi] = ia < ib ? [ia, ib] : [ib, ia];
+    pairs.push({ minIdx: lo, children: [prev[lo], prev[hi]], box: { a: sideOf(rm, true), b: sideOf(rm, false) } });
+  }
+
+  // sobrantes: emparejar en orden (mantiene hermanos provisionales contiguos)
+  let buf = null;
+  for (let i = 0; i < n; i++) {
+    if (consumed[i]) continue;
+    if (buf == null) buf = i;
+    else {
+      pairs.push({ minIdx: buf, children: [prev[buf], prev[i]], box: null });
+      buf = null;
+    }
+  }
+  if (buf != null) pairs.push({ minIdx: buf, children: [prev[buf], { box: null, codes: new Set(), children: null }], box: null });
+
+  pairs.sort((a, b) => a.minIdx - b.minIdx);
+  return pairs.map((p) => ({
+    box: p.box,
+    codes: new Set([...p.children[0].codes, ...p.children[1].codes]),
+    children: p.children,
+  }));
 }
 
 // Quién pasaría AHORA a dieciseisavos: 1º y 2º de cada grupo + 8 mejores terceros.
